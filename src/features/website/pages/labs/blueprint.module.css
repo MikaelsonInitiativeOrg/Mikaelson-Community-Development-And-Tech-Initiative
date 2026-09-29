@@ -1,0 +1,238 @@
+/* Blueprint → product card. One attribute on the card, data-phase, drives
+   every layer:
+     idle   before it has been seen (hidden only when JS can run it)
+     plan   grid paper draws top-down, each part appears as a dashed ghost
+            with its annotation
+     build  the teal surface fills top-down, ghosts give way to the real
+            parts one after another, the paper fades
+   With no data-phase / no scripting the card renders built.
+   Timing is set per target state, so going back to the plan is fast
+   (exits faster than entrances) and building is staggered. */
+
+.card {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --line: rgb(92 225 230 / 0.7);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* Grid paper with crop marks. */
+.paper {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  border: 1px dashed rgb(92 225 230 / 0.45);
+  background-image:
+    linear-gradient(rgb(92 225 230 / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(92 225 230 / 0.09) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: #003e45;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  clip-path: inset(0 0 0 0 round 1rem);
+  pointer-events: none;
+}
+
+.part {
+  position: relative;
+}
+
+/* Dashed outline where the part will be. */
+.ghost {
+  position: absolute;
+  inset: -3px;
+  border: 1px dashed var(--line);
+  border-radius: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Text parts: bars at the text's own line height instead of a box. */
+.lines {
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 0.55em,
+    rgb(92 225 230 / 0.32) 0.55em 1.1em,
+    transparent 1.1em 1.65em
+  );
+}
+
+/* Image parts: the classic crossed box. */
+.cross {
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--line) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--line) 50%, transparent calc(50% + 0.5px));
+}
+
+.pill {
+  border-radius: 999px;
+}
+
+/* Annotation label breaking the dashed line, like a dimension on a drawing. */
+.note {
+  position: absolute;
+  top: -0.7rem;
+  left: 0.5rem;
+  z-index: 1;
+  padding: 0 0.375rem;
+  background: #050a0a;
+  color: #5ce1e6;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- idle: only when JS will run the sequence ---------- */
+@media (scripting: enabled) {
+  .card[data-phase="idle"] .surface {
+    clip-path: inset(0 0 100% 0 round 1rem);
+  }
+  .card[data-phase="idle"] .real {
+    opacity: 0;
+  }
+}
+
+/* ---------- plan ---------- */
+.card[data-phase="plan"] .paper {
+  opacity: 1;
+  clip-path: inset(0 0 0 0 round 1rem);
+  transition:
+    clip-path 600ms var(--ease-out),
+    opacity 150ms var(--ease-out);
+}
+
+@media (scripting: enabled) {
+  .card[data-phase="idle"] .paper {
+    opacity: 1;
+    clip-path: inset(0 0 100% 0 round 1rem);
+  }
+}
+
+.card[data-phase="plan"] .surface {
+  clip-path: inset(0 0 100% 0 round 1rem);
+  transition: clip-path 250ms var(--ease-in-out);
+}
+
+.card[data-phase="plan"] .ghost,
+.card[data-phase="plan"] .note {
+  opacity: 1;
+  transition: opacity 200ms var(--ease-out);
+  transition-delay: calc(120ms + var(--d, 0ms));
+}
+
+.card[data-phase="plan"] .real {
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 150ms var(--ease-out),
+    transform 150ms var(--ease-out);
+}
+
+/* ---------- build ---------- */
+.card[data-phase="build"] .paper {
+  opacity: 0;
+  clip-path: inset(0 0 0 0 round 1rem);
+  transition: opacity 300ms ease 700ms;
+}
+
+.card[data-phase="build"] .surface {
+  clip-path: inset(0 0 0 0 round 1rem);
+  transition: clip-path 500ms var(--ease-in-out);
+}
+
+.card[data-phase="build"] .note {
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+}
+
+.card[data-phase="build"] .ghost {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+  transition-delay: calc(260ms + var(--d, 0ms));
+}
+
+.card[data-phase="build"] .real {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+  transition-delay: calc(260ms + var(--d, 0ms));
+}
+
+/* Reduced motion: the same states, reached by short fades. No drawing,
+   no filling, no rise, no stagger. */
+@media (prefers-reduced-motion: reduce) {
+  .card .paper,
+  .card .surface,
+  .card .ghost,
+  .card .note,
+  .card .real {
+    transition-property: opacity !important;
+    transition-duration: 200ms !important;
+    transition-delay: 0ms !important;
+    transform: none !important;
+  }
+  .card[data-phase] .paper {
+    clip-path: none;
+  }
+  .card[data-phase] .surface {
+    clip-path: none;
+    opacity: 1;
+  }
+  .card[data-phase="plan"] .surface {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (scripting: enabled) {
+  .card[data-phase="idle"] .surface {
+    opacity: 0;
+  }
+}
+
+/* Toggle between the plan and the product. */
+.toggle {
+  transition:
+    transform 150ms var(--ease-out),
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.toggle:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle:active {
+    transform: none;
+  }
+}

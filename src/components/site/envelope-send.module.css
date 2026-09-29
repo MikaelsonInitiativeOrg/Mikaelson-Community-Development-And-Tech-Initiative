@@ -1,0 +1,236 @@
+/* "The page goes in the envelope". Phases are CSS keyed off data-phase;
+   the flight is WAAPI in the component. Idle has no transitions on the
+   scene, so it resets instantly and invisibly. */
+
+.wrap {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --env-back: #d8cab8;
+  --env-flap: #e4d7c7;
+  --env-front: #eee4d8;
+
+  position: relative;
+}
+
+/* Floats above the button and takes no space. It's clipped only along its
+   bottom edge (the button's top), which is what makes the sheet look like
+   it comes out of the button; everything above is free, so the flight
+   isn't cut off. */
+.scene {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 10;
+  width: 12rem;
+  height: 7.5rem;
+  margin-left: -6rem;
+  pointer-events: none;
+  clip-path: inset(-100vh -100vw 0 -100vw);
+}
+
+.wrap[data-phase="idle"] .scene {
+  visibility: hidden;
+}
+
+.envelope {
+  position: absolute;
+  bottom: 0.5rem;
+  left: calc(50% - 2.75rem);
+  width: 5.5rem;
+  height: 3.5rem;
+  isolation: isolate;
+}
+
+/* Back, front and flap share one box and one entry transform, so they
+   stay aligned while the envelope appears. */
+.part {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(0.4rem) scale(0.94);
+}
+
+.wrap:is([data-phase="fold"], [data-phase="tuck"], [data-phase="seal"], [data-phase="fly"]) .part {
+  opacity: 1;
+  transform: none;
+  /* Waits until the folding half has swung above the fold line, so the
+     pocket never covers it mid-fold. */
+  transition:
+    opacity 200ms ease 200ms,
+    transform 260ms var(--ease-out) 200ms;
+}
+
+.back {
+  z-index: 1;
+  border-radius: 4px;
+  background: var(--env-back);
+}
+
+.flapLayer {
+  z-index: 2;
+  perspective: 20rem;
+}
+
+/* Once the sheet is in, the flap comes to the front and closes over it. */
+.wrap:is([data-phase="seal"], [data-phase="fly"], [data-phase="return"]) .flapLayer {
+  z-index: 5;
+}
+
+.flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 58%;
+  border-radius: 4px 4px 0 0;
+  background: var(--env-flap);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: 50% 0;
+  /* Open: flipped up above the envelope, behind the sheet. */
+  transform: rotateX(180deg);
+}
+
+.wrap:is([data-phase="seal"], [data-phase="fly"], [data-phase="return"]) .flap {
+  transform: rotateX(0deg);
+  transition: transform 300ms var(--ease-in-out);
+}
+
+/* A small seal lands on the flap's tip once it's shut. Accent only. */
+.seal {
+  position: absolute;
+  top: calc(58% - 0.45rem);
+  left: calc(50% - 0.35rem);
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: #5ce1e6;
+  box-shadow: inset 0 0 0 1.5px rgb(0 62 69 / 0.45);
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.wrap:is([data-phase="seal"], [data-phase="fly"], [data-phase="return"]) .seal {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 150ms ease 240ms,
+    transform 200ms var(--ease-out) 240ms;
+}
+
+/* The pocket: the whole face except a V at the top, where the letter
+   peeks out until the flap closes. */
+.front {
+  z-index: 4;
+  border-radius: 4px;
+  background: linear-gradient(160deg, var(--env-front) 40%, #e7dccf 100%);
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Sending failed: the sealed envelope sinks back into the button. */
+.wrap[data-phase="return"] .envelope {
+  opacity: 0;
+  transform: translateY(2.5rem) scale(0.94);
+  transition:
+    opacity 250ms ease,
+    transform 300ms var(--ease-in-out);
+}
+
+/* ── Sheet ── */
+
+.sheet {
+  position: absolute;
+  z-index: 3;
+  top: 0.6rem;
+  left: 0.75rem;
+  width: 4rem;
+  height: 5rem;
+  perspective: 20rem;
+  /* Idle: below the clip edge, i.e. inside the button. */
+  transform: translateY(3.5rem);
+}
+
+.wrap:is([data-phase="rise"], [data-phase="fold"]) .sheet {
+  transform: translateY(-3.6rem);
+  transition: transform 420ms var(--ease-out);
+}
+
+.wrap:is([data-phase="tuck"], [data-phase="seal"], [data-phase="fly"], [data-phase="return"]) .sheet {
+  transform: translateY(0);
+  transition: transform 360ms var(--ease-in-out);
+}
+
+.half,
+.face {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.45rem 0.45rem 0;
+}
+
+.half {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  border-radius: 3px 3px 0 0;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(32 29 22 / 0.12);
+}
+
+/* The lower half folds up over the top half along the middle. */
+.lower {
+  top: 50%;
+  padding: 0;
+  border-radius: 0 0 3px 3px;
+  background: transparent;
+  box-shadow: none;
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+}
+
+.wrap:is([data-phase="fold"], [data-phase="tuck"], [data-phase="seal"], [data-phase="fly"], [data-phase="return"])
+  .lower {
+  transform: rotateX(180deg);
+  transition: transform 380ms var(--ease-in-out);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  padding-top: 0.2rem;
+  border-radius: 0 0 3px 3px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(32 29 22 / 0.12);
+  backface-visibility: hidden;
+}
+
+/* The back of the paper, seen once it's folded. */
+.faceBack {
+  border-radius: 3px 3px 0 0;
+  background: #f6f1ea;
+  transform: rotateX(180deg);
+}
+
+.line,
+.titleLine {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: #e3dbd0;
+}
+
+.titleLine {
+  width: 60%;
+  height: 4px;
+  background: rgb(0 62 69 / 0.55);
+}
+
+/* Reduced motion: no paper and no flight (the hooks skip it too). */
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    display: none;
+  }
+}

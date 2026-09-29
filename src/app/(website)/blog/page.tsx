@@ -1,12 +1,17 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { client } from "@/sanity/lib/client";
-import { allPostsQuery } from "@/sanity/lib/queries";
-import BlogIndexClient from "@/components/client-page/blog-index-client";
+import { postsWithBodyQuery, type Post } from "@/features/website/pages/blog/posts";
+import { BlogLab } from "@/features/website/pages/blog/blog-lab";
+import { ScrollLine } from "@/components/site/scroll-line";
 
 export const revalidate = 60;
 
+const description =
+  "Explore articles on leadership, personal development, and student growth from the Mikaelson Initiative. Insights written to inspire African students to think bigger and act with purpose.";
+
+// The real page's SEO basics, with the lab's title and noindex on top.
 export const metadata: Metadata = {
-  title: "Blog | Ideas, Leadership & Growth — Mikaelson Initiative",
+  title: "Blog | Ideas, Leadership & Growth",
   description:
     "Explore articles on leadership, personal development, and student growth from the Mikaelson Initiative. Insights written to inspire African students to think bigger and act with purpose.",
   keywords: [
@@ -59,9 +64,9 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  let posts = [];
+  let posts: Post[] = [];
   try {
-    posts = await client.fetch(allPostsQuery);
+    posts = await client.fetch(postsWithBodyQuery);
   } catch {
     posts = [];
   }
@@ -75,8 +80,7 @@ export default async function BlogPage() {
             "@context": "https://schema.org",
             "@type": "Blog",
             name: "Mikaelson Initiative Blog",
-            description:
-              "Articles on leadership, personal development, and student growth across Africa.",
+            description: "Articles on leadership, personal development, and student growth across Africa.",
             url: "https://mikaelsoninitiative.org/blog",
             publisher: {
               "@type": "Organization",
@@ -86,17 +90,20 @@ export default async function BlogPage() {
                 url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
               },
             },
-            blogPost: posts.map((post: any) => ({
+            // Posts open in place, so there are no per-post URLs.
+            blogPost: posts.map((post) => ({
               "@type": "BlogPosting",
               headline: post.title,
               description: post.excerpt,
               datePublished: post.publishedAt,
-              url: `https://mikaelsoninitiative.org/blog/${post.slug.current}`,
+              url: "https://mikaelsoninitiative.org/blog",
             })),
           }),
         }}
       />
-      <BlogIndexClient posts={posts} />
+      <ScrollLine>
+        <BlogLab posts={posts} />
+      </ScrollLine>
     </>
   );
 }

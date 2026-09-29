@@ -1,0 +1,43 @@
+/* Circled items (Team cards): ScrollLine draws a loop around each in turn
+   as you scroll. Until the loop reaches one it waits a little back; once
+   circled it settles in place, and the one the line is on right now comes
+   forward, toward the screen. Waiting styles apply only once the line is
+   live ([data-line-ready]). Uses scale/translate (not transform) so it
+   never fights the card's own flip. */
+
+.item {
+  transition:
+    opacity 300ms ease,
+    scale 450ms cubic-bezier(0.34, 1.4, 0.5, 1),
+    translate 450ms cubic-bezier(0.23, 1, 0.32, 1),
+    filter 300ms ease;
+}
+
+[data-line-ready] .item:not([data-reached]) {
+  opacity: 0.4;
+  scale: 0.94;
+  translate: 0 10px;
+  filter: saturate(0.6);
+}
+
+[data-line-ready] .item[data-current] {
+  position: relative;
+  z-index: 2;
+  /* Wide items (e.g. a full-width row) set a gentler --lift. */
+  scale: var(--lift, 1.08);
+  translate: 0 -6px;
+  transition-delay: 250ms;
+  filter: drop-shadow(0 24px 30px rgb(0 62 69 / 0.35));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  [data-line-ready] .item:not([data-reached]),
+  [data-line-ready] .item[data-current] {
+    transition: none;
+    opacity: 1;
+    scale: none;
+    translate: none;
+    filter: none;
+  }
+}

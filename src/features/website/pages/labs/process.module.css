@@ -1,0 +1,110 @@
+/* The innovation process as a track: a segment runs from each step's
+   square to the next and fills when the track comes into view; each square
+   ticks as the fill reaches it. One sweep, once. */
+
+.track {
+  --step: 280ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.step {
+  position: relative;
+}
+
+.square {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 4px;
+  background: #5ce1e6;
+  color: #000;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    transform 250ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--step));
+}
+
+.check {
+  transition: opacity 150ms ease;
+  transition-delay: calc(var(--i, 0) * var(--step) + 80ms);
+}
+
+/* Segment from this square to the next one. Vertical on phones,
+   horizontal from md. */
+.segment {
+  position: absolute;
+  left: calc(0.875rem - 1px);
+  top: 1.75rem;
+  bottom: -2.5rem;
+  width: 2px;
+  background: rgb(0 62 69 / 0.12);
+  overflow: hidden;
+}
+
+.segment::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #0097a7;
+  transform-origin: top;
+  transition: transform var(--step) linear;
+  transition-delay: calc(var(--i, 0) * var(--step) + 120ms);
+}
+
+@media (min-width: 768px) {
+  .segment {
+    left: 1.75rem;
+    right: -2rem;
+    top: calc(0.875rem - 1px);
+    bottom: auto;
+    width: auto;
+    height: 2px;
+  }
+  .segment::after {
+    transform-origin: left;
+  }
+}
+
+:global(.dark) .segment {
+  background: rgb(255 255 255 / 0.12);
+}
+
+:global(.dark) .segment::after {
+  background: #5ce1e6;
+}
+
+/* Only wait for the sweep when JS can play it. */
+@media (scripting: enabled) {
+  .track:not([data-visible]) .square {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px rgb(0 62 69 / 0.3);
+    transform: scale(0.94);
+  }
+  :global(.dark) .track:not([data-visible]) .square {
+    box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.3);
+  }
+  .track:not([data-visible]) .check {
+    opacity: 0;
+  }
+  .track:not([data-visible]) .segment::after {
+    transform: scaleX(0) scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .square,
+  .check,
+  .segment::after {
+    transition-duration: 200ms;
+    transition-delay: 0ms;
+    transition-property: opacity, background-color;
+  }
+  .track:not([data-visible]) .square {
+    transform: none;
+  }
+}

@@ -1,8 +1,13 @@
-import Home from "@/components/client-page/landing-page";
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ScrollLine } from "@/components/site/scroll-line";
+import OurEcosystemTabs from "@/features/website/pages/home/ecosystem-tabs";
+import { Closing, Hero, WalkWithUs, WhoWeServe } from "@/features/website/pages/home/sections";
+import { BlogPreview } from "@/features/website/pages/home/blog-preview";
 
 export const metadata: Metadata = {
-  title: "Mikaelson Initiative | Community & Technology Infrastructure for Discipline, Habit Leadership & Sustainable Growth in Education",
+  // absolute: skip the "%s | Mikaelson Initiative" template (the name is already in it)
+  title: { absolute: "Mikaelson Initiative | Community & Technology Infrastructure for Discipline, Habit Leadership & Sustainable Growth in Education" },
   description:
     "Structured youth leadership and personal development programs equipping African students with discipline, innovation skills, and accountability systems.",
   keywords: [
@@ -58,7 +63,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LandingPage() {
+// No images on this page. The turquoise line drops down the page as you
+// scroll (ScrollLine), looping beside each heading marked data-stop.
+export default function HomePage() {
   return (
     <>
       <script
@@ -91,7 +98,17 @@ export default function LandingPage() {
           }),
         }}
       />
-      <Home />
+      <ScrollLine>
+        <Hero />
+        <OurEcosystemTabs />
+        <WhoWeServe />
+        <WalkWithUs />
+        {/* The Sanity fetch streams in after the rest of the page. */}
+        <Suspense fallback={<div className="min-h-[480px] bg-white dark:bg-[#0a0f0f]" />}>
+          <BlogPreview />
+        </Suspense>
+        <Closing />
+      </ScrollLine>
     </>
   );
 }

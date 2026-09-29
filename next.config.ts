@@ -15,12 +15,19 @@ const cacheForever = [
   { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
 ];
 
+// Long caching for our own static folders, in production only: in dev, file
+// names don't change between edits, so "cache forever" left browsers running
+// stale code. /_next/static is left to Next.js, which already caches it
+// forever in production.
 const headerRules = async () => [
   { source: "/(.*)", headers: securityHeaders },
-  { source: "/_next/static/(.*)", headers: cacheForever },
-  { source: "/assets/(.*)", headers: cacheForever },
-  { source: "/sdg/(.*)", headers: cacheForever },
-  { source: "/icons/(.*)", headers: cacheForever },
+  ...(process.env.NODE_ENV === "production"
+    ? [
+        { source: "/assets/(.*)", headers: cacheForever },
+        { source: "/sdg/(.*)", headers: cacheForever },
+        { source: "/icons/(.*)", headers: cacheForever },
+      ]
+    : []),
 ];
 
 const nextConfig: NextConfig = {

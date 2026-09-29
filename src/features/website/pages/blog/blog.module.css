@@ -1,0 +1,70 @@
+/* Blog lab: the drawn line, the reader's progress line and the loading
+   state. Curves from the motion rules. */
+
+/* The hand-drawn turquoise line draws itself once. */
+.drawn path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 900ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@media (scripting: enabled) {
+  .drawn:not([data-visible]) path {
+    stroke-dashoffset: 1;
+  }
+}
+
+/* How far through the story you are, along the reader's top bar, linked to
+   the reader's own scroll. Hidden where scroll timelines aren't supported. */
+.progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .progress {
+    display: block;
+    transform-origin: left center;
+    transform: scaleX(0);
+    animation: progress linear both;
+    animation-timeline: scroll(nearest block);
+  }
+}
+
+@keyframes progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Loading the story's text (the renderer is fetched on first open): the
+   line draws across, over and over, only while that chunk loads. */
+.loadingLine {
+  transform-origin: left center;
+  animation: loading 1100ms cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+@keyframes loading {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawn path {
+    transition: opacity 200ms ease;
+  }
+
+  .drawn:not([data-visible]) path {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+
+  .loadingLine {
+    animation: none;
+    opacity: 0.6;
+  }
+}

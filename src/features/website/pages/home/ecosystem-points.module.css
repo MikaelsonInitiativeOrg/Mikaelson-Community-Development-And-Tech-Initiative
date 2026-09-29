@@ -1,0 +1,104 @@
+/* Ecosystem point cards, touched by the scroll line (see ScrollLine's
+   data-branch / data-reached). The branch takes ~320ms to cross, so the
+   card pops just as it arrives. Waiting styles apply only once the line
+   is live ([data-line-ready]); without JS the cards show as they are. */
+
+/* Depth: the column is a 3D stage. Waiting cards sit tilted back and
+   pushed into the page; when the line touches one it swings forward past
+   the screen plane (the overshoot curve) and settles. The card the line
+   is on now stays lifted toward you; once it moves on, it settles back. */
+.stage {
+  perspective: 1400px;
+  perspective-origin: 50% 40%;
+}
+
+.card {
+  transform-origin: 50% 100%;
+  transition:
+    opacity 260ms ease,
+    transform 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 380ms ease,
+    filter 260ms ease;
+}
+
+[data-line-ready] .card:not([data-reached]) {
+  opacity: 0.35;
+  transform: translate3d(0, 24px, -220px) rotateX(14deg);
+  filter: blur(1.5px) saturate(0.7);
+}
+
+[data-line-ready] .card[data-reached] {
+  opacity: 1;
+  /* Settled states are 2D, so text re-renders sharp after the swing. */
+  transform: translateY(0) scale(1);
+  box-shadow: 0 24px 50px -34px rgb(0 62 69 / 0.5);
+  transition:
+    opacity 260ms cubic-bezier(0.23, 1, 0.32, 1) 200ms,
+    transform 800ms cubic-bezier(0.34, 1.5, 0.5, 1) 200ms,
+    box-shadow 600ms ease 200ms,
+    filter 300ms ease 200ms;
+}
+
+/* The one the line is on: forward, toward the screen. */
+[data-line-ready] .card[data-current] {
+  z-index: 2;
+  transform: translateY(-6px) scale(1.05);
+  box-shadow:
+    0 50px 90px -40px rgb(0 62 69 / 0.6),
+    0 0 0 2px #5ce1e6;
+}
+
+/* Inside: number, then what it means, then the explanation. */
+.seq,
+.number,
+.glow {
+  transition:
+    opacity 300ms cubic-bezier(0.23, 1, 0.32, 1),
+    translate 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-line-ready] .card:not([data-reached]) .seq {
+  opacity: 0;
+  translate: 0 10px;
+}
+[data-line-ready] .card:not([data-reached]) .number {
+  opacity: 0;
+  translate: 14px 0;
+}
+[data-line-ready] .card:not([data-reached]) .glow {
+  opacity: 0;
+}
+[data-line-ready] .card[data-reached] .number {
+  transition-delay: 300ms;
+}
+[data-line-ready] .card[data-reached] .glow {
+  transition-duration: 600ms;
+  transition-delay: 260ms;
+}
+[data-line-ready] .card[data-reached] .seq {
+  transition-delay: calc(380ms + var(--k) * 80ms);
+}
+
+.accent {
+  transform-origin: left;
+  transition: transform 500ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+[data-line-ready] .card:not([data-reached]) .accent {
+  transform: scaleX(0);
+}
+[data-line-ready] .card[data-reached] .accent {
+  transition-delay: 420ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card[data-reached],
+  .card[data-current],
+  .seq,
+  .number,
+  .glow,
+  .accent {
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

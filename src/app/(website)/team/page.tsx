@@ -1,11 +1,11 @@
-// app/team/page.tsx
-import JoinTeam from "@/features/website/components/team/join-our-team";
-import TeamHeroSection from "@/features/website/components/team/team-hero-section";
-import TeamSection from "@/features/website/components/team/team-section";
 import type { Metadata } from "next";
+import { JoinTeam } from "@/features/website/pages/team/join-team";
+import { TeamBoard } from "@/features/website/pages/team/team-board";
+import { TeamHero } from "@/features/website/pages/team/team-hero";
+import { ScrollLine } from "@/components/site/scroll-line";
 
 export const metadata: Metadata = {
-  title: "Meet Our Team | Mikaelson Initiative",
+  title: "Meet Our Team",
   description:
     "Discover the passionate individuals driving the Mikaelson Initiative forward. Our team works tirelessly to create impact and transform ideas into reality.",
   openGraph: {
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
   },
 };
 
-const TeamPage = () => {
+export default function TeamPage() {
   return (
-    <div className="px-5 dark:bg-brand-dark-bg-nav">
-      <TeamHeroSection />
-      <TeamSection />
-      <JoinTeam />
-    </div>
+    <>
+      <ScrollLine>
+        <TeamHero />
+        <TeamBoard />
+        <JoinTeam />
+      </ScrollLine>
+    </>
   );
-};
-
-export default TeamPage;
+}

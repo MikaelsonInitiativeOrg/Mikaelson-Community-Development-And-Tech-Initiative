@@ -1,0 +1,46 @@
+/* v2 "Walking together" motifs for the Team page.
+   - .line: the hand-drawn turquoise path. Draws once (stroke-dashoffset,
+     1000ms strong ease-in-out) when data-visible is set.
+   - .print: a photo that settles into place like a pinned print, from
+     scale(0.96) and a little extra tilt, 500ms ease-out, once. Transform
+     only, so the hero photo is never hidden (it's the likely LCP).
+   Without JS both render in their end state. Reduced motion: the line
+   fades in, prints don't move. */
+
+.line path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1000ms cubic-bezier(0.77, 0, 0.175, 1) 200ms;
+}
+
+.print {
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1) var(--delay, 0ms);
+}
+
+@media (scripting: enabled) {
+  .line:not([data-visible]) path {
+    stroke-dashoffset: 1;
+  }
+  .print:not([data-visible]) {
+    transform: rotate(calc(var(--tilt, 0deg) - 1.5deg)) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line path {
+    stroke-dashoffset: 0 !important;
+    transition: none;
+  }
+  .line {
+    transition: opacity 300ms ease;
+  }
+  .line:not([data-visible]) {
+    opacity: 0;
+  }
+  .print,
+  .print:not([data-visible]) {
+    transform: rotate(var(--tilt, 0deg));
+    transition: none;
+  }
+}

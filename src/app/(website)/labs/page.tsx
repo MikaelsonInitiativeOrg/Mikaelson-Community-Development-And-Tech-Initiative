@@ -1,9 +1,8 @@
-import LabsCollaborationSection from "@/features/website/components/labs/labs-collaboration";
-import LabsFeaturedProjects from "@/features/website/components/labs/labs-featured-section";
-import LabsHeroSection from "@/features/website/components/labs/labs-hero";
-import LabsInnovationProcess from "@/features/website/components/labs/labs-innovation-process";
-import LabsWhatWeDo from "@/features/website/components/labs/labs-what-we-do";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+import { LabsHero } from "@/features/website/pages/labs/labs-hero";
+import { WhatWeDo } from "@/features/website/pages/labs/what-we-do";
+import { Collaboration } from "@/features/website/pages/labs/collaboration";
 
 export const metadata: Metadata = {
   title: "Mikaelson Innovation Labs | Building Africa's Future",
@@ -32,17 +31,20 @@ export const metadata: Metadata = {
   },
 };
 
-const LabsPage = () => {
-  return (
-    <main className="labs-page">
-      <LabsHeroSection />
-      <LabsWhatWeDo />
-      <LabsFeaturedProjects />
-      <LabsInnovationProcess />
-      {/* <LabsTeamSection /> */}
-      <LabsCollaborationSection />
-    </main>
-  );
-};
+// Below the fold: split the interactive sections out of the first bundle.
+const BlueprintProjects = dynamic(() =>
+  import("@/features/website/pages/labs/blueprint-projects").then((m) => m.BlueprintProjects),
+);
+const ProcessTrack = dynamic(() => import("@/features/website/pages/labs/process-track").then((m) => m.ProcessTrack));
 
-export default LabsPage;
+export default function LabsPage() {
+  return (
+    <>
+      <LabsHero />
+      <WhatWeDo />
+      <BlueprintProjects />
+      <ProcessTrack />
+      <Collaboration />
+    </>
+  );
+}

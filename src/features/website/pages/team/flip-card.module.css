@@ -1,0 +1,101 @@
+/* A person's card on the board turns over to show who they are.
+   - Both faces share one grid cell, so the card is as tall as the taller
+     face and the back never clips its text.
+   - Turn: rotateY 180deg, 450ms strong ease-in-out (it's movement on screen,
+     and a physical turn reads as rushed any faster).
+   - Pointer hover (fine pointers only): a 6deg peek hinting that it turns.
+   - Press: the whole card sinks to 0.98 via the separate `scale` property,
+     so it composes with the rotation instead of replacing it.
+   - Keyboard turns are instant (data-instant). Reduced motion: no rotation,
+     the faces crossfade. */
+
+.card {
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  perspective: 1200px;
+  scale: 1;
+  transition: scale 150ms var(--ease-out);
+}
+
+.card:has(> .hit:active) {
+  scale: 0.98;
+}
+
+.inner {
+  display: grid;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 450ms var(--ease-in-out);
+}
+
+.face {
+  grid-area: 1 / 1;
+  min-width: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+.card[data-turned] .inner {
+  transform: rotateY(180deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:not([data-turned]):has(> .hit:hover) .inner {
+    transform: rotateY(-6deg);
+  }
+  .card[data-turned]:has(> .hit:hover) .inner {
+    transform: rotateY(174deg);
+  }
+}
+
+.card[data-instant] .inner {
+  transition: none;
+}
+
+/* Full-card button above the faces; it doesn't rotate, so its focus ring
+   stays flat and readable. */
+.hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 1rem;
+  cursor: pointer;
+}
+
+.hit:focus-visible {
+  outline: 2px solid #0097a7;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:has(> .hit:active) {
+    scale: 1;
+  }
+  .inner,
+  .card[data-turned] .inner,
+  .card .inner {
+    transform: none !important;
+    transition: none;
+  }
+  .back {
+    transform: none;
+    opacity: 0;
+  }
+  .face {
+    transition: opacity 200ms ease;
+  }
+  .card[data-turned] .back {
+    opacity: 1;
+  }
+  .card[data-turned] .front {
+    opacity: 0;
+  }
+}

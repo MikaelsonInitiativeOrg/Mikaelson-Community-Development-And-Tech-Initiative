@@ -1,22 +1,25 @@
-import { AboutHeader } from "@/features/website/components/about/about-header";
-import { AboutOrganization } from "@/features/website/components/about/about-organisation";
-import { ImpactStats } from "@/features/website/components/about/impact-stats";
-import { JoinSection } from "@/features/website/components/about/join-section";
-import { OurStory } from "@/features/website/components/about/our-story";
-import SdgSection from "@/features/website/components/about/sdg-section";
-import { TeamSection } from "@/features/website/components/about/team-section";
-import { WhatWeDo } from "@/features/website/components/about/what-we-do";
 import type { Metadata } from "next";
+import { ScrollLine } from "@/components/site/scroll-line";
+import { SdgGoals } from "@/features/website/pages/about/sdg-goals";
+import {
+  AboutHero,
+  JoinBand,
+  OurStory,
+  WhatWeDo,
+  WhoWeAre,
+} from "@/features/website/pages/about/sections";
+import { TeamPreview } from "@/features/website/pages/about/team-preview";
+
 
 export const metadata: Metadata = {
-  title: "About Us | Mikaelson Initiative",
+  title: "About Us",
   description:
     "Learn about the Mikaelson Initiative, our mission, vision, values, and the passionate team driving positive change across Africa.",
   openGraph: {
     title: "About Us | Mikaelson Initiative",
     description:
       "Learn about the Mikaelson Initiative, our mission, vision, values, and the passionate team driving positive change across Africa.",
-    url: "https://mikaelsoninitiative.org/about",
+    url: "https://mikaelsoninitiative.org/about-us",
     images: [
       {
         url: "/assets/images/mikaelsonlogo.png",
@@ -35,19 +38,18 @@ export const metadata: Metadata = {
   },
 };
 
-const AboutPage = () => {
+export default function AboutPage() {
   return (
-    <main className="dark:bg-brand-dark-bg-nav">
-      <AboutHeader />
-      <SdgSection />
-      <AboutOrganization />
-      <OurStory />
-      <WhatWeDo />
-      <ImpactStats />
-      <TeamSection />
-      <JoinSection />
-    </main>
+    <div className="bg-white text-[#111] dark:bg-[#050A0A] dark:text-white">
+      <ScrollLine>
+        <AboutHero />
+        <WhoWeAre />
+        <OurStory />
+        <WhatWeDo />
+        <SdgGoals />
+        <TeamPreview />
+        <JoinBand />
+      </ScrollLine>
+    </div>
   );
-};
-
-export default AboutPage;
+}

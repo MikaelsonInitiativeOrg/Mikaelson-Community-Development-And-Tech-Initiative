@@ -1,0 +1,114 @@
+/* Legal document body: a readable measure, 17px at 1.75, calm lists. */
+
+.prose {
+  font-size: 17px;
+  line-height: 1.75;
+  color: #333;
+}
+
+.prose > * + * {
+  margin-top: 1em;
+}
+
+.prose h3 {
+  margin-top: 1.9em;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #003e45;
+}
+
+.prose h3 + * {
+  margin-top: 0.5em;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: #111;
+}
+
+.prose ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.prose li {
+  padding-left: 0.25rem;
+}
+
+.prose li + li {
+  margin-top: 0.5em;
+}
+
+.prose li::marker {
+  color: #0097a7;
+}
+
+.prose dt {
+  font-weight: 600;
+  color: #111;
+}
+
+.prose dt:not(:first-child) {
+  margin-top: 1em;
+}
+
+.prose dd {
+  margin-top: 0.25em;
+  padding-left: 1rem;
+  border-left: 2px solid #e8f7f8;
+}
+
+.prose a {
+  color: #003e45;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: #5ce1e6;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  border-radius: 2px;
+}
+
+.prose a:focus-visible {
+  outline: 2px solid #0097a7;
+  outline-offset: 2px;
+}
+
+.note {
+  border-radius: 1rem;
+  background: #eefcfc;
+  padding: 1.25rem 1.5rem;
+}
+
+.note > p:first-child {
+  font-weight: 600;
+  color: #003e45;
+}
+
+.note > p + p {
+  margin-top: 0.25em;
+}
+
+:global(.dark) .prose {
+  color: rgb(255 255 255 / 0.78);
+}
+
+:global(.dark) .prose h3,
+:global(.dark) .prose strong,
+:global(.dark) .prose dt,
+:global(.dark) .note > p:first-child {
+  color: #fff;
+}
+
+:global(.dark) .prose dd {
+  border-left-color: rgb(255 255 255 / 0.12);
+}
+
+:global(.dark) .prose a {
+  color: #5ce1e6;
+}
+
+:global(.dark) .note {
+  background: rgb(255 255 255 / 0.05);
+}

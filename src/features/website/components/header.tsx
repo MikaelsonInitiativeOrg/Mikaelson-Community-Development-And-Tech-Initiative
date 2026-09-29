@@ -44,15 +44,6 @@ const Header: React.FC<HeaderProps> = ({
       ],
     },
     {
-      label: "Initiatives",
-      href: "/product",
-      dropdown: [
-        { label: "Our Product", href: "/product" },
-        { label: "Mikaelson Labs", href: "/labs" },
-        { label: "The Mikaelson Community", href: "/community" },
-      ],
-    },
-    {
       label: "Get Involved",
       href: "/sponsor",
       dropdown: [

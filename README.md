@@ -1,4 +1,4 @@
-# 🌍 Mikaelson Community Development And Tech Initiative
+# Mikaelson Initiative website
 
 <div align="center">
 
@@ -8,537 +8,194 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss)
 ![License](https://img.shields.io/badge/License-Private-red)
 
-**Empowering communities across Africa through technology, education, and collaboration.**
+**Building the habits, knowledge, communities and capacity behind the people who will build what Africa becomes.**
 
-[Live Demo](#) • [Report Bug](https://github.com/Mikaelson-1/Mikaelson-Innovation-and-Community-Development-Initiative/issues) • [Request Feature](https://github.com/Mikaelson-1/Mikaelson-Innovation-and-Community-Development-Initiative/issues)
+[mikaelsoninitiative.org](https://mikaelsoninitiative.org) • [Report a bug](https://github.com/Mikaelson-1/Mikaelson-Innovation-and-Community-Development-Initiative/issues)
 
 </div>
 
 ---
 
-## 📚 Table of Contents
+The public website of the **Mikaelson Initiative**, a youth and community
+development non-profit in Lagos, Nigeria. It is the home of four parts of
+one ecosystem: the **Mikaelson School Club**, **Mikaelson Labs**, the
+**Partnership & Growth Network** and the **Mikaelson Institute**.
 
-- [About the Project](#-about-the-project)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Environment Variables](#environment-variables)
-  - [Running the App](#running-the-app)
-- [Project Structure](#-project-structure)
-- [Pages Overview](#-pages-overview)
-- [Contributing](#-contributing)
-  - [Development Workflow](#development-workflow)
-  - [Code Style Guidelines](#code-style-guidelines)
-  - [Commit Message Convention](#commit-message-convention)
-  - [Pull Request Process](#pull-request-process)
-- [Scripts Reference](#-scripts-reference)
-- [Troubleshooting](#-troubleshooting)
-- [License](#-license)
-- [Contact](#-contact)
+> **Redesign:** the site was redesigned in 2026. Before you change a page,
+> read **[docs/REDESIGN.md](docs/REDESIGN.md)**: the design system,
+> colours, type, the signature scroll line, motion rules, every page's
+> design and why, and what was tried and dropped.
 
----
+## Contents
 
-## 🎯 About the Project
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Pages](#pages)
+- [Project structure](#project-structure)
+- [Design system in brief](#design-system-in-brief)
+- [Content: the blog](#content-the-blog)
+- [Forms and payments](#forms-and-payments)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
 
-The **Mikaelson Community Development And Tech Initiative** is a platform dedicated to empowering African communities through technology, education, and collaborative innovation. The web application serves as the digital hub for:
+## Tech stack
 
-- **The Mikaelson Community** — A vibrant network of ambitious students and changemakers united by excellence and intentional growth
-- **Mikaelson Labs** — An innovation hub where ideas are built and experimented with to solve challenges across Africa
-- **Partnership & Growth Network** — Connecting students with mentors, resources, and opportunities for collaboration
+| Area | Tools |
+| --- | --- |
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, Turbopack), [React 19](https://react.dev/), TypeScript 5 |
+| Styling | [Tailwind CSS 4](https://tailwindcss.com/), CSS modules for motion, `tailwind-merge`, `class-variance-authority` |
+| Motion | [Motion](https://motion.dev/) (`motion/react`) and plain CSS transitions/keyframes |
+| UI | [Radix UI](https://www.radix-ui.com/) (accordion, dialog, dropdown), [Lucide](https://lucide.dev/) icons, [Sonner](https://sonner.emilkowal.ski/) toasts, `react-country-flag` |
+| Content | [Sanity](https://www.sanity.io/) via `next-sanity` (blog posts) |
+| Forms | React Hook Form + Zod |
+| Theme | `next-themes` (light and dark) |
 
----
+## Getting started
 
-## ✨ Features
+**Prerequisites:** Node.js 20+ and npm.
 
-### 🏠 Public Website
-- **Homepage** with hero section, ecosystem overview, and impact metrics
-- **About Us** page with organizational information
-- **Product/Services** overview
-- **Community** hub for members
-- **Mikaelson Labs** showcase
-- **Volunteer** opportunities
-- **Sponsorship** information
-- **Team** profiles
-- **Challenges** and initiatives
-- **Social Feed** integration
-
-### 🔐 Authentication
-- Secure authentication powered by **Clerk**
-- Login/Sign-up flows
-- Email verification
-- Password recovery
-- SSO callback support
-
-### 🎨 User Experience
-- **Dark/Light mode** support with next-themes
-- **Responsive design** (mobile-first approach)
-- **Animated sections** with Motion (Framer Motion)
-- **Accessible UI** components built with Radix UI
-
-### 🛠️ Admin & Dashboard
-- Admin panel for content management
-- User dashboard for authenticated members
-
----
-
-## 🛠 Tech Stack
-
-### Core Framework
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| [Next.js](https://nextjs.org/) | 16 | React framework with App Router |
-| [React](https://react.dev/) | 19 | UI library |
-| [TypeScript](https://www.typescriptlang.org/) | 5 | Type safety |
-
-### Styling
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| [Tailwind CSS](https://tailwindcss.com/) | 4 | Utility-first CSS |
-| [tw-animate-css](https://www.npmjs.com/package/tw-animate-css) | 1.4 | Animation utilities |
-| [tailwind-merge](https://www.npmjs.com/package/tailwind-merge) | 3.3 | Merge Tailwind classes |
-| [class-variance-authority](https://cva.style/docs) | 0.7 | Component variants |
-
-### UI Components
-| Technology | Purpose |
-|------------|---------|
-| [Radix UI](https://www.radix-ui.com/) | Accessible primitives (dialogs, dropdowns, tabs, etc.) |
-| [Lucide React](https://lucide.dev/) | Icon library |
-| [Embla Carousel](https://www.embla-carousel.com/) | Carousel component |
-| [cmdk](https://cmdk.paco.me/) | Command palette |
-| [Sonner](https://sonner.emilkowal.ski/) | Toast notifications |
-| [Recharts](https://recharts.org/) | Data visualization |
-| [Vaul](https://vaul.emilkowal.ski/) | Drawer component |
-
-### Data & Forms
-| Technology | Purpose |
-|------------|---------|
-| [TanStack Query](https://tanstack.com/query/) | Server state management |
-| [TanStack Table](https://tanstack.com/table/) | Table component |
-| [React Hook Form](https://react-hook-form.com/) | Form management |
-| [Zod](https://zod.dev/) | Schema validation |
-| [Axios](https://axios-http.com/) | HTTP client |
-| [SWR](https://swr.vercel.app/) | Data fetching hooks |
-
-### Authentication
-| Technology | Purpose |
-|------------|---------|
-| [Clerk](https://clerk.com/) | Authentication & user management |
-
-### Utilities
-| Technology | Purpose |
-|------------|---------|
-| [date-fns](https://date-fns.org/) | Date utilities |
-| [Motion](https://motion.dev/) | Animation library |
-| [next-themes](https://github.com/pacocoursey/next-themes) | Theme management |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- **Node.js** (v18.18.0 or higher recommended)
-- **npm** (v9 or higher) or **yarn** or **pnpm**
-- **Git**
-
-Verify your installations:
 ```bash
-node -v
-npm -v
-git --version
-```
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Mikaelson-1/Mikaelson-Innovation-and-Community-Development-Initiative.git
-   cd Mikaelson-Innovation-and-Community-Development-Initiative
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory with the following variables:
-
-```env
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key
-CLERK_SECRET_KEY=sk_test_your_secret_key
-
-# Clerk URLs
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-
-# API Configuration (if applicable)
-NEXT_PUBLIC_API_URL=https://api.example.com
-```
-
-> ⚠️ **Important**: Never commit your `.env.local` file to version control. It's already included in `.gitignore`.
-
-### Running the App
-
-**Development mode** (with hot reloading):
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-**Production build**:
-```bash
-npm run build
-npm run start
-```
-
----
-
-## 📁 Project Structure
-
-```
-Mikaelson-Innovation-and-Community-Development-Initiative/
-├── public/                     # Static assets
-│   ├── assets/                 # Images and media files
-│   │   └── images/            # Image assets
-│   ├── icons/                 # Icon files
-│   └── sdg/                   # SDG-related assets
-├── src/
-│   ├── app/                   # Next.js App Router
-│   │   ├── (website)/         # Public website routes
-│   │   │   ├── about-us/      # About page
-│   │   │   ├── challenges/    # Challenges page
-│   │   │   ├── community/     # Community page
-│   │   │   ├── contact/       # Contact page
-│   │   │   ├── faq/           # FAQ page
-│   │   │   ├── feed/          # Social feed page
-│   │   │   ├── help/          # Help center
-│   │   │   ├── labs/          # Mikaelson Labs page
-│   │   │   ├── login/         # Login page
-│   │   │   ├── privacy/       # Privacy policy
-│   │   │   ├── product/       # Product page
-│   │   │   ├── sign-up/       # Registration page
-│   │   │   ├── sponsor/       # Sponsorship page
-│   │   │   ├── team/          # Team page
-│   │   │   ├── terms/         # Terms of service
-│   │   │   ├── volunteer/     # Volunteer page
-│   │   │   ├── waitlist/      # Waitlist page
-│   │   │   ├── layout.tsx     # Website layout
-│   │   │   └── page.tsx       # Homepage
-│   │   ├── admin/             # Admin protected routes
-│   │   ├── api/               # API routes
-│   │   ├── dashboard/         # User dashboard
-│   │   ├── sso-callback/      # SSO authentication callback
-│   │   ├── globals.css        # Global styles
-│   │   └── layout.tsx         # Root layout
-│   ├── components/            # Shared components
-│   │   ├── ui/                # UI primitives (shadcn/ui style)
-│   │   ├── icons/             # Icon components
-│   │   ├── footer.tsx         # Footer component
-│   │   ├── mobile-nav.tsx     # Mobile navigation
-│   │   ├── mode-toggler.tsx   # Dark/light mode toggle
-│   │   └── ...
-│   ├── features/              # Feature-specific modules
-│   │   ├── admin/             # Admin feature components
-│   │   ├── dashboard/         # Dashboard feature components
-│   │   └── website/           # Website feature components
-│   │       └── components/    # Page-specific components
-│   │           ├── about/
-│   │           ├── auth/
-│   │           ├── challenges/
-│   │           ├── community/
-│   │           ├── contact/
-│   │           ├── faq/
-│   │           ├── labs/
-│   │           ├── product/
-│   │           ├── sponsor/
-│   │           ├── team/
-│   │           ├── volunteer/
-│   │           └── waitlist/
-│   ├── hooks/                 # Custom React hooks
-│   │   └── use-mobile.tsx     # Mobile detection hook
-│   ├── lib/                   # Utility functions
-│   │   └── utils.ts           # Common utilities
-│   └── constants/             # App constants
-├── types/                     # TypeScript type definitions
-├── .env.local                 # Environment variables (not committed)
-├── .gitignore                 # Git ignore rules
-├── components.json            # shadcn/ui configuration
-├── eslint.config.mjs          # ESLint configuration
-├── next.config.ts             # Next.js configuration
-├── package.json               # Dependencies and scripts
-├── postcss.config.mjs         # PostCSS configuration
-├── tailwind.config.ts         # Tailwind CSS configuration (if present)
-└── tsconfig.json              # TypeScript configuration
-```
-
----
-
-## 📄 Pages Overview
-
-| Route | Description |
-|-------|-------------|
-| `/` | Homepage with hero, ecosystem, community sections, and impact metrics |
-| `/about-us` | Organization's mission, vision, and history |
-| `/product` | Product/service offerings |
-| `/community` | Community hub for members |
-| `/labs` | Mikaelson Labs innovation hub |
-| `/volunteer` | Volunteer opportunities and sign-up |
-| `/sponsor` | Sponsorship and partnership information |
-| `/team` | Team member profiles |
-| `/challenges` | Community challenges and initiatives |
-| `/feed` | Social media feed integration |
-| `/contact` | Contact information and form |
-| `/faq` | Frequently asked questions |
-| `/help` | Help center and support resources |
-| `/login` | User login |
-| `/sign-up` | New user registration |
-| `/waitlist` | Waitlist registration |
-| `/privacy` | Privacy policy |
-| `/terms` | Terms of service |
-| `/code-of-conduct` | Community code of conduct |
-| `/dashboard` | Authenticated user dashboard |
-| `/admin` | Admin panel (protected) |
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the community! Here's how you can help:
-
-### Development Workflow
-
-1. **Fork the repository** on GitHub
-
-2. **Clone your fork**
-   ```bash
-   git clone https://github.com/Mikaelson-1/Mikaelson-Innovation-and-Community-Development-Initiative.git
-   cd mikaelson-initiative
-   ```
-
-3. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   # or for bug fixes
-   git checkout -b fix/bug-description
-   ```
-
-4. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Make your changes** and test thoroughly
-
-7. **Run linting** before committing
-   ```bash
-   npm run lint
-   ```
-
-8. **Commit your changes** (see commit convention below)
-
-9. **Push to your fork**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-10. **Open a Pull Request** on GitHub
-
-### Code Style Guidelines
-
-#### General
-- Use **TypeScript** for all new files
-- Follow existing code patterns and conventions
-- Write self-documenting code with meaningful variable/function names
-- Add comments for complex logic
-
-#### Components
-- Use **functional components** with hooks
-- Place shared components in `src/components/`
-- Place feature-specific components in `src/features/<feature>/components/`
-- Follow the existing file naming convention (kebab-case for files)
-
-#### Styling
-- Use **Tailwind CSS** classes for styling
-- Use `cn()` utility from `@/lib/utils` for conditional classes
-- Follow the design system colors and spacing
-
-#### File Organization
-```tsx
-// 1. Imports (external → internal → types → styles)
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import type { ComponentProps } from './types';
-
-// 2. Type definitions (if not in separate file)
-interface MyComponentProps {
-  title: string;
-  onClick?: () => void;
-}
-
-// 3. Component definition
-export function MyComponent({ title, onClick }: MyComponentProps) {
-  // 3a. Hooks
-  const [state, setState] = useState(false);
-  
-  // 3b. Event handlers
-  const handleClick = () => {
-    // ...
-  };
-  
-  // 3c. Render
-  return (
-    <div>
-      {/* ... */}
-    </div>
-  );
-}
-```
-
-### Commit Message Convention
-
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
-```
-
-**Types:**
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, etc.)
-- `refactor`: Code refactoring
-- `perf`: Performance improvements
-- `test`: Adding or updating tests
-- `chore`: Maintenance tasks
-
-**Examples:**
-```bash
-feat(community): add member profile cards
-fix(auth): resolve login redirect issue
-docs(readme): update installation instructions
-style(header): improve mobile navigation spacing
-refactor(api): simplify data fetching logic
-```
-
-### Pull Request Process
-
-1. **Ensure your PR**:
-   - Has a clear, descriptive title
-   - Describes what changes were made and why
-   - References any related issues (e.g., "Fixes #123")
-   - Passes all linting checks
-
-2. **PR Title Format**: Use the same convention as commits
-   ```
-   feat(component): brief description of changes
-   ```
-
-3. **Wait for review**: A maintainer will review your PR and may request changes
-
-4. **Address feedback**: Make requested changes and push updates
-
-5. **Merge**: Once approved, your PR will be merged
-
----
-
-## 📜 Scripts Reference
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Build production bundle |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint to check code quality |
-
----
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-#### Module not found errors
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules
-rm package-lock.json
+git clone https://github.com/Mikaelson-1/Mikaelson-Innovation-and-Community-Development-Initiative.git
+cd Mikaelson-Innovation-and-Community-Development-Initiative
 npm install
 ```
 
-#### Next.js cache issues
-```bash
-# Clear Next.js cache
-rm -rf .next
-npm run dev
+Create `.env.local` in the project root (it is gitignored):
+
+```env
+NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# optional
+NEXT_PUBLIC_SANITY_API_VERSION=2026-03-07   # this is the default
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=
 ```
 
-#### Clerk authentication issues
-- Verify your environment variables are correctly set
-- Ensure Clerk publishable key starts with `pk_`
-- Check that your Clerk secret key starts with `sk_`
+Run it:
 
-#### Tailwind CSS not working
 ```bash
-# Ensure PostCSS is configured correctly
-# Check postcss.config.mjs and tailwind configuration
-npm run dev
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm run start    # serve the production build
+npm run lint     # ESLint
+npx tsc --noEmit # type check
 ```
 
-#### TypeScript errors
-```bash
-# Rebuild TypeScript
-npx tsc --noEmit
+## Pages
+
+| Route | What it is |
+| --- | --- |
+| `/` | Home: centred hero with Uli line art, Our Ecosystem, Who we serve, Walk with us, latest stories |
+| `/about-us` | Mission, story, SDGs and team summary |
+| `/labs` | Mikaelson Labs, the innovation hub (the one technical-looking page) |
+| `/team` | The team as portrait cards that turn over, with search |
+| `/blog` | Stories from Sanity; posts open in place (`/blog?post=<slug>`) |
+| `/sponsor` | Ways to give (Paystack or bank transfer), how to partner, supporters |
+| `/volunteer` | Why people volunteer, the application (Google Form), FAQs |
+| `/contact` | A letter-style contact form that opens your email app |
+| `/help` | Help Center |
+| `/faq` | Frequently asked questions |
+| `/legal` | Legal hub linking the documents below |
+| `/terms` | Terms of Service |
+| `/privacy` | Privacy Policy |
+| `/code-of-conduct` | Code of Conduct and how to report a concern |
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx               root layout (fonts, theme, metadata template)
+│   ├── globals.css              Tailwind and global styles
+│   ├── sitemap.ts, robots.ts
+│   └── (website)/               the public routes (see Pages)
+│       └── layout.tsx           header + footer
+├── components/
+│   ├── site/                    shared redesign blocks: scroll line, footer,
+│   │                            envelope submit, clipped tabs, motion helpers
+│   ├── ui/                      the few shadcn/ui primitives still used
+│   └── client-page/data.ts      "who we serve" data
+├── features/website/
+│   ├── pages/<page>/            components for each redesigned page
+│   └── components/              header, About page sections, shared pieces
+├── constants/index.ts           team members and filters
+├── sanity/                      Sanity client, image helper and schemas
+└── lib/, types/                 utilities and shared types
+docs/REDESIGN.md                 the design and engineering record
 ```
 
-### Need More Help?
+## Design system in brief
 
-- Check the [Next.js Documentation](https://nextjs.org/docs)
-- Review [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- Consult [Clerk Documentation](https://clerk.com/docs)
-- Open an issue on GitHub
+Full detail is in [docs/REDESIGN.md](docs/REDESIGN.md). In short:
 
----
+- **Colours:** turquoise `#5CE1E6` (accent, never as text on white), deep
+  teal `#003E45` (headings, dark bands), teal `#0097A7` (labels, focus),
+  near-black `#050A0A`, tints `#EEFCFC`/`#E8F7F8`, ink `#111`/`#555`.
+- **Type:** Poppins; h1 60/38px extrabold, h2 40/28px bold, body 16–18px
+  at 1.7 leading.
+- **The scroll line:** wrap a page in `<ScrollLine>` from
+  `@/components/site/scroll-line`. It draws a turquoise line down the page
+  as you scroll, looping beside each `h1`/`h2`. Opt-in extras:
+  `data-wrap`/`data-wrap-item` (the line wraps around items in turn),
+  `data-circle` (it loops around each item as you scroll), `data-branch`
+  (it branches into a card). Items touched by the line come forward toward
+  the screen.
+- **Motion:** strong ease-out curves, 150–300ms for UI, transform and
+  opacity only, sequences on timers, and `prefers-reduced-motion` always
+  honoured. Use `Reveal` and `StaggerGroup` from `@/components/site/motion`.
+- **Voice:** warm, plain, about people. Never invent people, quotes,
+  numbers or links.
 
-## 📄 License
+## Content: the blog
 
-This project is **private** and proprietary. All rights reserved.
+Blog posts are written in Sanity (`src/sanity/schemaTypes/post.ts`) and
+fetched with a 60-second revalidate. Categories map to the ecosystem on the
+home page: Communities → School Club, Innovation → Labs, Leadership →
+Partnership & Growth Network.
 
----
+## Forms and payments
 
-## 📬 Contact
+The site has no form backend, so nothing pretends to send:
 
-**Mikaelson Initiative Team**
+- **Contact** opens the visitor's email app with their message written
+  out, addressed to `partnership@mikaelsoninitiative.org`. To send from the
+  page, add an API route and call it in `ContactForm`'s `onSubmit`
+  (`src/features/website/pages/contact/contact-form.tsx`).
+- **Volunteer** applications go through the Initiative's Google Form.
+- **Sponsor** payments go to Paystack or by bank transfer (details in
+  `src/features/website/pages/sponsor/data.ts`).
 
-- Website: [https://mikaelsoninitiative.org]
-- Email: [hello@mikaelsoninitiative.org]
-- Twitter: [@mcdti_org]
+## Contributing
 
----
+1. Branch from `main` (`feature/…` or `fix/…`).
+2. Read [docs/REDESIGN.md](docs/REDESIGN.md) and follow its tokens,
+   voice and motion rules. New sections go in
+   `src/features/website/pages/<page>/`.
+3. Check your change in a real browser at 1440px and 375px, in light and
+   dark mode, with reduced motion on and off.
+4. Run `npm run lint` and `npx tsc --noEmit` before you push.
+5. Commit with [Conventional Commits](https://www.conventionalcommits.org/)
+   (`feat(team): …`, `fix(blog): …`) and open a pull request.
 
-<center>
+**Keep it light:** don't add a dependency for something a few lines of CSS
+can do, and delete components when you stop using them.
 
-**Built with ❤️ for Africa by the Mikaelson Initiative Team**
+## Troubleshooting
 
-</center>
+- **Changes don't show up in the browser.** Make sure `next.config.ts`
+  only sends long cache headers in production (it does). If your browser
+  cached old files before that, empty its cache once (Chrome: DevTools
+  open, right-click reload, "Empty Cache and Hard Reload"; Safari:
+  Option+Cmd+E).
+- **The scroll line doesn't appear or looks stuck.** Check in a visible
+  browser tab; embedded or hidden previews pause animation frames.
+- **Blog is empty locally.** Check the Sanity variables in `.env.local`.
+- **Stale build output.** `rm -rf .next && npm run dev`.
+
+## Contact
+
+Mikaelson Initiative, Lagos, Nigeria ·
+[hello@mikaelsoninitiative.org](mailto:hello@mikaelsoninitiative.org) ·
+[@mcdti_org](https://x.com/mcdti_org)
+
+This project is private and proprietary. All rights reserved.

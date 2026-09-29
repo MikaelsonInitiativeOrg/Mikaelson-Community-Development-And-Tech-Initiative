@@ -1,0 +1,44 @@
+/* Lab motion primitives. CSS transitions instead of Framer Motion so the
+   reveals run off the main thread while the page is still loading (the
+   moment they play). Curves from the animate skill's tables. */
+
+.reveal,
+.staggerItem {
+  transition:
+    opacity 450ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 450ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.staggerItem {
+  transition-duration: 300ms;
+  transition-delay: calc(var(--i, 0) * var(--stagger, 50ms));
+}
+
+/* Only hide content when JS can reveal it again: without scripting,
+   everything renders visible (the original hides it behind JS). */
+@media (scripting: enabled) {
+  .reveal:not([data-visible]) {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  .staggerGroup:not([data-visible]) > .staggerItem {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Reduced motion: keep a short fade, drop the movement and the stagger. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .staggerItem {
+    transition-property: opacity;
+    transition-duration: 200ms;
+    transition-delay: 0ms;
+  }
+
+  .reveal:not([data-visible]),
+  .staggerGroup:not([data-visible]) > .staggerItem {
+    transform: none;
+  }
+}
