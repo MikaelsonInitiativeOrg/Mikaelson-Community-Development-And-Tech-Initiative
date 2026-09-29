@@ -44,13 +44,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: "Secretary, Board of Trustees",
     img: "/assets/images/Imam-Bashir.JPG",
   },
-  {
-    name: "Precious Oparanozie",
-    department: "BOARD",
-    role: "Advisor on Legal & Policy",
-    country: "NG",
-    img: "/assets/images/PreciousChidinma.jpg",
-  },
 
   // ── Team Leads ──────────────────────────────────────────
   {
@@ -70,27 +63,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     img: "/assets/images/Irene-Ezechi.jpg",
   },
   {
-    name: "Okikiolu Eniola-Glory Fiyinfoluwa",
-    department: "OPERATIONS",
-    country: "NG",
-    role: "Community Operations Lead",
-    img: "/assets/images/eniola.jpeg",
-  },
-  {
-    name: "Hammed Abibat",
-    department: "OPERATIONS",
-    country: "NG",
-    role: "Social Media Relations",
-    img: "/assets/images/Hammed.JPG",
-  },
-  {
-    name: "Inioluwa Afolabi",
-    department: "OPERATIONS",
-    country: "NG",
-    role: "Project Manager - Monthly Reset Challenges",
-    img: "/assets/images/afolabi.jpeg",
-  },
-  {
     name: "Mariam Jimoh",
     department: "OPERATIONS",
     country: "NG",
@@ -103,20 +75,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     country: "NG",
     role: "Technical Content Writer",
     img: "/assets/images/BlessingOlusola.jpeg",
-  },
-  {
-    name: "Neh Glory Anye",
-    department: "OPERATIONS",
-    country: "NG",
-    role: "Project Manager - Digital Literacy (CyberSec.)",
-    img: "/assets/images/Neh-Glory.jpeg",
-  },
-  {
-    name: "Shukurat O. Abdulkadir",
-    department: "OPERATIONS",
-    country: "NG",
-    role: "Project Manager - Digital Literacy (CyberSec.)",
-    img: "/assets/images/ShukuratAbdulkadir.jpg",
   },
 
   // ── Tech Team ────────────────────────────────────────────
@@ -142,13 +100,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     img: "/assets/images/Boluwatife-Mercy.jpeg",
   },
   {
-    name: "Fashoyin Olujimi Temitope",
-    department: "TECH",
-    country: "NG",
-    role: "Data Analyst",
-    img: "/assets/images/Olujimi-Fashoyin.jpg",
-  },
-  {
     name: "Theresa Gyamfi",
     department: "TECH",
     country: "GH",
@@ -168,13 +119,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     country: "NG",
     role: "Mobile Developer",
     img: "/assets/images/FavourAbayomi.jpg",
-  },
-  {
-    name: "Ajigbayi Oluwafemi Tosin",
-    department: "TECH",
-    country: "NG",
-    role: "Software Engineer",
-    img: "/assets/images/OluwafemiAjigbayi.JPG",
   },
   {
     name: "Maxwell Oba-Joshua",
@@ -212,13 +156,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     country: "NG",
     role: "Product Designer",
     img: "/assets/images/AbrahamEkundayo.jpeg",
-  },
-  {
-    name: "Sodeeq Badejoko",
-    department: "DESIGN",
-    country: "NG",
-    role: "Graphic Designer",
-    img: "/assets/images/SodeeqBadejoko.png",
   },
   {
     name: "Idowu Ayomide Victor",

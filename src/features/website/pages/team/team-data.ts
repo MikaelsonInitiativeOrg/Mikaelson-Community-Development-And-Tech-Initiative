@@ -1,23 +1,9 @@
-import { FILTERS, TEAM_MEMBERS as ALL_MEMBERS, type FilterType, type TeamMember } from "@/constants";
+import { FILTERS, TEAM_MEMBERS, type FilterType, type TeamMember } from "@/constants";
 
-// Everything comes from TEAM_MEMBERS / FILTERS in @/constants, as the
-// current /team page uses them, minus the people the user asked to take
-// off this page (the real /team page is unchanged). Counts are computed,
-// never typed in.
+// Everything comes from TEAM_MEMBERS / FILTERS in @/constants. Counts are
+// computed, never typed in.
 
-const REMOVED = new Set([
-  "Ajigbayi Oluwafemi Tosin",
-  "Fashoyin Olujimi Temitope",
-  "Shukurat O. Abdulkadir",
-  "Inioluwa Afolabi",
-  "Okikiolu Eniola-Glory Fiyinfoluwa",
-  "Hammed Abibat",
-  "Precious Oparanozie",
-  "Neh Glory Anye",
-  "Sodeeq Badejoko",
-]);
-
-export const TEAM_MEMBERS = ALL_MEMBERS.filter((m) => !REMOVED.has(m.name));
+export { TEAM_MEMBERS };
 
 export type GroupId = Exclude<FilterType, "ALL">;
 

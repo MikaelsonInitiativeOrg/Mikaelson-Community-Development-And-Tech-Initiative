@@ -46,14 +46,26 @@ export const GIVE_OPTIONS: GiveOption[] = [
   },
 ];
 
+/** The Initiative's Paystack payment page: the fallback if the site's own
+ * checkout is unavailable (e.g. PAYSTACK_SECRET_KEY isn't set). */
 export const PAYSTACK_URL = "https://paystack.com/pay/mikaelson-initiative";
 
-export const WIRE = {
-  bank: "First Bank of Nigeria",
-  accountName: "Mikaelson Community Development And Tech Initiative",
-  accountNumber: "2048233790",
-  confirmEmail: "hello@mikaelsoninitiative.org",
-};
+/** Accounts individuals can give to by bank transfer. */
+export const BANK_ACCOUNTS = [
+  {
+    bank: "First Bank of Nigeria",
+    accountName: "Mikaelson Community Development And Tech Initiative",
+    accountNumber: "2048233790",
+  },
+  {
+    bank: "Guaranty Trust Bank",
+    accountName: "Mikaelson Community Development and Tech Initiative",
+    accountNumber: "3004744203",
+  },
+];
+
+/** Where individuals send their transfer confirmation. */
+export const CONFIRM_EMAIL = "hello@mikaelsoninitiative.org";
 
 export const PARTNER_EMAIL = "partnership@mikaelsoninitiative.org";
 

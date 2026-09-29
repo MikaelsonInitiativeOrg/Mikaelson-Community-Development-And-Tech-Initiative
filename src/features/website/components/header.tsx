@@ -157,7 +157,8 @@ const Header: React.FC<HeaderProps> = ({
           {actionButton && (
             <Link
               href={actionButton.href}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-[#5CE1E6] text-black hover:bg-[#4bcdd2] transition-all duration-200"
+              // The home hero's chunky "shadow step" button, with a shorter step to fit the bar.
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm rounded-full bg-[#5CE1E6] font-bold text-[#050A0A] shadow-[0_6px_0_-1px_#003E45] transition-[translate,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:translate-y-[2px] hover:shadow-[0_4px_0_-1px_#003E45] active:translate-y-[4px] active:shadow-[0_1px_0_-1px_#003E45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7]"
             >
               {actionButton.label}
               <svg

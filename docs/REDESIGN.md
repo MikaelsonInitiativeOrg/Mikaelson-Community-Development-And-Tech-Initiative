@@ -220,9 +220,14 @@ article body is loaded on first open to keep the index light.
 
 **Sponsor (`/sponsor`).** Centred hero; the two give buttons are wrapped by
 the line and come forward. "What your support makes possible" shows three
-options with icons and a hand-drawn circle on the chosen one; one dialog
-shows both Paystack and bank transfer. How to partner, then supporters'
-logos.
+options with icons and a hand-drawn circle on the chosen one. The give
+popup has a tinted header with a heart; individuals see both bank accounts
+(First Bank, GTBank) as deep-teal cards with one-tap copy and a ready-made
+confirmation email; organisations get a short form (organisation, contact,
+email, amount with suggested chips) that starts a Paystack checkout on the
+server and returns to `/sponsor/thank-you`, which verifies the payment
+before saying thank you. Buttons that don't say who is giving get an
+Individual / Organisation switch. How to partner, then supporters' logos.
 
 **Volunteer (`/volunteer`).** Centred hero; "Why people volunteer with us"
 with its real photo and four reasons the line circles in turn; an apply
@@ -351,7 +356,8 @@ not reached can go.
   states** without checking: circle uses `scale`/`translate`, wrap uses
   `transform` in its keyframes.
 - **Forms have no backend.** Contact uses `mailto:`, Volunteer uses the
-  Google Form, Sponsor uses Paystack and bank details. Don't show "sent"
+  Google Form, Sponsor uses bank details (individuals) and a server-verified
+  Paystack checkout (organisations). Don't show "sent"
   for anything the site didn't actually send.
 - **Titles** use the root layout's template `"%s | Mikaelson Initiative"`,
   so page titles should not repeat the name (use `title: { absolute }`

@@ -66,6 +66,8 @@ Create `.env.local` in the project root (it is gitignored):
 NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
 NEXT_PUBLIC_SANITY_DATASET=production
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# server only: organisation payments (use an sk_test_ key locally)
+PAYSTACK_SECRET_KEY=sk_test_xxx
 # optional
 NEXT_PUBLIC_SANITY_API_VERSION=2026-03-07   # this is the default
 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=
@@ -90,7 +92,8 @@ npx tsc --noEmit # type check
 | `/labs` | Mikaelson Labs, the innovation hub (the one technical-looking page) |
 | `/team` | The team as portrait cards that turn over, with search |
 | `/blog` | Stories from Sanity; posts open in place (`/blog?post=<slug>`) |
-| `/sponsor` | Ways to give (Paystack or bank transfer), how to partner, supporters |
+| `/sponsor` | Ways to give (bank transfer for individuals, Paystack for organisations), how to partner, supporters |
+| `/sponsor/thank-you` | Where Paystack returns organisations; verifies the payment (not indexed) |
 | `/volunteer` | Why people volunteer, the application (Google Form), FAQs |
 | `/contact` | A letter-style contact form that opens your email app |
 | `/help` | Help Center |
@@ -162,8 +165,18 @@ The site has no form backend, so nothing pretends to send:
   page, add an API route and call it in `ContactForm`'s `onSubmit`
   (`src/features/website/pages/contact/contact-form.tsx`).
 - **Volunteer** applications go through the Initiative's Google Form.
-- **Sponsor** payments go to Paystack or by bank transfer (details in
-  `src/features/website/pages/sponsor/data.ts`).
+- **Sponsor**:
+  - **Individuals** give by bank transfer to First Bank or GTBank (accounts
+    in `src/features/website/pages/sponsor/data.ts`).
+  - **Organisations** pay online with Paystack. The popup posts to
+    `/api/paystack/initialize`, which starts the transaction on the server
+    with `PAYSTACK_SECRET_KEY` and returns Paystack's checkout URL. After
+    paying, Paystack sends them to `/sponsor/thank-you`, which verifies the
+    payment with Paystack before thanking them. If the key isn't set, the
+    popup offers the Paystack payment page instead.
+  - The secret key lives only in the hosting environment, never in the repo
+    or the browser. Locally, add it to `.env.local` to test with a
+    `sk_test_…` key.
 
 ## Contributing
 
