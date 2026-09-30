@@ -1,0 +1,77 @@
+/* Individual supporter logo cards in the circle sequence */
+.logoCard {
+  position: relative;
+  transition:
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 300ms ease,
+    box-shadow 400ms ease;
+}
+
+/* The brand logo image inside each card */
+.logoImg {
+  transition:
+    filter 600ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 500ms ease,
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* While the scroll line is active and has not reached this logo yet:
+   card stays in a quiet, grayscale waiting state */
+:global([data-line-ready]) .logoCard:not([data-reached]) {
+  opacity: 0.8;
+}
+
+:global([data-line-ready]) .logoCard:not([data-reached]) .logoImg {
+  filter: grayscale(100%);
+  opacity: 0.45;
+}
+
+/* When the scroll line loops around the logo:
+   reveals the logo's authentic, vibrant brand colors */
+:global([data-line-ready]) .logoCard[data-reached] {
+  opacity: 1;
+}
+
+:global([data-line-ready]) .logoCard[data-reached] .logoImg {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+/* When the scroll line is currently circling this exact logo:
+   lifts forward with an accent turquoise border, soft depth shadow, and pops in color */
+:global([data-line-ready]) .logoCard[data-current] {
+  border-color: #5ce1e6 !important;
+  box-shadow:
+    0 16px 32px -8px rgba(0, 62, 69, 0.2),
+    0 0 0 2px rgba(92, 225, 230, 0.35);
+}
+
+:global([data-line-ready]) .logoCard[data-current] .logoImg {
+  filter: grayscale(0%) !important;
+  opacity: 1 !important;
+  transform: scale(1.06);
+}
+
+/* Hover reveal: allows visitors to reveal the color of any logo immediately */
+.logoCard:hover {
+  opacity: 1 !important;
+  border-color: #5ce1e6;
+}
+
+.logoCard:hover .logoImg {
+  filter: grayscale(0%) !important;
+  opacity: 1 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logoCard,
+  .logoImg,
+  :global([data-line-ready]) .logoCard:not([data-reached]),
+  :global([data-line-ready]) .logoCard[data-reached],
+  :global([data-line-ready]) .logoCard:not([data-reached]) .logoImg,
+  :global([data-line-ready]) .logoCard[data-reached] .logoImg {
+    transition: none;
+    opacity: 1;
+    filter: grayscale(0%);
+  }
+}

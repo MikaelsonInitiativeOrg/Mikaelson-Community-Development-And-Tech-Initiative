@@ -50,19 +50,100 @@ export const GIVE_OPTIONS: GiveOption[] = [
  * checkout is unavailable (e.g. PAYSTACK_SECRET_KEY isn't set). */
 export const PAYSTACK_URL = "https://paystack.com/pay/mikaelson-initiative";
 
-/** Accounts individuals can give to by bank transfer. */
-export const BANK_ACCOUNTS = [
-  {
-    bank: "First Bank of Nigeria",
-    accountName: "Mikaelson Community Development And Tech Initiative",
-    accountNumber: "2048233790",
-  },
+export type BankAccount = {
+  bank: string;
+  currency: "NGN" | "USD" | "GBP" | "EUR";
+  currencySymbol: string;
+  accountName: string;
+  accountNumber: string;
+  swiftCode?: string;
+  note?: string;
+};
+
+/** Local Nigerian Naira (NGN) accounts */
+export const LOCAL_ACCOUNTS: BankAccount[] = [
   {
     bank: "Guaranty Trust Bank",
+    currency: "NGN",
+    currencySymbol: "₦",
     accountName: "Mikaelson Community Development and Tech Initiative",
     accountNumber: "3004744203",
+    note: "Local NGN bank transfer / online banking",
+  },
+  {
+    bank: "First Bank of Nigeria",
+    currency: "NGN",
+    currencySymbol: "₦",
+    accountName: "Mikaelson Community Development And Tech Initiative",
+    accountNumber: "2048233790",
+    note: "Local NGN bank transfer / online banking",
   },
 ];
+
+/** International Domiciliary accounts (USD, GBP, EUR) */
+export const INTERNATIONAL_ACCOUNTS: BankAccount[] = [
+  {
+    bank: "Guaranty Trust Bank (USD)",
+    currency: "USD",
+    currencySymbol: "$",
+    accountName: "Mikaelson Community Development and Tech Initiative",
+    accountNumber: "3004744227",
+    swiftCode: "GTBINGLA",
+    note: "United States Dollar (USD) domiciliary & wire transfer",
+  },
+  {
+    bank: "Guaranty Trust Bank (GBP)",
+    currency: "GBP",
+    currencySymbol: "£",
+    accountName: "Mikaelson Community Development and Tech Initiative",
+    accountNumber: "3004744241",
+    swiftCode: "GTBINGLA",
+    note: "British Pound Sterling (GBP) domiciliary & wire transfer",
+  },
+  {
+    bank: "Guaranty Trust Bank (EUR)",
+    currency: "EUR",
+    currencySymbol: "€",
+    accountName: "Mikaelson Community Development and Tech Initiative",
+    accountNumber: "3004744265",
+    swiftCode: "GTBINGLA",
+    note: "Euro (EUR) domiciliary & wire transfer",
+  },
+];
+
+/** All accounts combined (for components that accept the full list) */
+export const BANK_ACCOUNTS: BankAccount[] = [
+  ...LOCAL_ACCOUNTS,
+  ...INTERNATIONAL_ACCOUNTS,
+];
+
+/** Guaranty Trust Bank International Wire Routing & Correspondent Bank Details */
+export const GTBANK_INTERNATIONAL_WIRE = {
+  bankName: "Guaranty Trust Bank Plc (GTBank)",
+  beneficiaryName: "Mikaelson Community Development and Tech Initiative",
+  swiftCode: "GTBINGLA",
+  bankAddress: "Plot 635, Akin Adesola Street, Victoria Island, Lagos, Nigeria",
+  correspondents: [
+    {
+      currency: "USD ($)",
+      bank: "Citibank, New York, USA",
+      swift: "CITIUS33",
+      routingAba: "021000089",
+    },
+    {
+      currency: "GBP (£)",
+      bank: "Standard Chartered Bank, London, UK",
+      swift: "SCBLGB2L",
+      sortCode: "60-91-04",
+    },
+    {
+      currency: "EUR (€)",
+      bank: "Citibank, London, UK / Deutsche Bank, Frankfurt",
+      swift: "CITIGB2L / DEUTDEFF",
+      sortCode: "18-50-08",
+    },
+  ],
+};
 
 /** Where individuals send their transfer confirmation. */
 export const CONFIRM_EMAIL = "hello@mikaelsoninitiative.org";

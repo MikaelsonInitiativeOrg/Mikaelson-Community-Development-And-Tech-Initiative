@@ -1,26 +1,36 @@
 "use client";
 
 import { useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowUpRight, Building2, Check, Copy, HeartHandshake, Lock, Mail, User } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Building2,
+  Check,
+  ChevronDown,
+  Copy,
+  HeartHandshake,
+  Lock,
+  Mail,
+  User,
+} from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { BANK_ACCOUNTS, CONFIRM_EMAIL, PARTNER_EMAIL, PAYSTACK_URL } from "./data";
+import {
+  BANK_ACCOUNTS,
+  CONFIRM_EMAIL,
+  GTBANK_INTERNATIONAL_WIRE,
+  INTERNATIONAL_ACCOUNTS,
+  LOCAL_ACCOUNTS,
+  PARTNER_EMAIL,
+  PAYSTACK_URL,
+} from "./data";
 import styles from "./give-dialog.module.css";
 
 /**
  * The "give" popup.
  *
- * - Individuals give by bank transfer: both accounts (First Bank, GTBank)
- *   as cards with one-tap copy, and a ready-made confirmation email.
- * - Organisations pay online: a short form (organisation, contact, email,
- *   amount) posts to /api/paystack/initialize, which starts a Paystack
- *   transaction with the secret key on the server and returns Paystack's
- *   checkout URL; the browser goes there, and Paystack sends them back to
- *   /sponsor/thank-you, which verifies the payment. If online payment
- *   isn't set up, the form offers the Paystack payment page instead.
+ * - Individuals give by bank transfer (local NGN or international USD/GBP/EUR wire with GTBank SWIFT code).
+ * - Organisations can choose between Direct Bank / Wire Transfer (NGN & USD/GBP/EUR) or Pay Online (Paystack).
  * - Buttons that don't say who is giving ("any") get a two-way switch.
- *
- * The switch is a real tablist (arrow keys, sliding highlight: 220ms,
- * strong ease-out; instant from the keyboard and under reduced motion).
  */
 
 type Who = "individual" | "company";
@@ -98,7 +108,7 @@ export function GiveButton({
         }}
       >
         <DialogContent
-          className={`${styles.dialog} max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] gap-0 overflow-y-auto rounded-3xl border-0 bg-white p-0 shadow-[0_40px_100px_-40px_rgb(0_62_69/0.55)] sm:max-w-[520px] dark:bg-[#0b1414] dark:ring-1 dark:ring-white/10`}
+          className={`${styles.dialog} max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] gap-0 overflow-y-auto rounded-3xl border-0 bg-white p-0 shadow-[0_40px_100px_-40px_rgb(0_62_69/0.55)] sm:max-w-[560px] dark:bg-[#0b1414] dark:ring-1 dark:ring-white/10`}
         >
           {/* Header: warm tint, a heart and the title. */}
           <div className="rounded-t-3xl bg-[#EEFCFC] px-6 pt-7 pb-6 sm:px-8 dark:bg-[#5CE1E6]/[0.07]">
@@ -110,8 +120,8 @@ export function GiveButton({
             </DialogTitle>
             <DialogDescription className="mt-2 text-[15px] leading-relaxed text-[#555] dark:text-white/65">
               {shown === "individual"
-                ? "Thank you for standing beside young people across Africa. Give by bank transfer to either account."
-                : "Thank you for standing beside young people across Africa. Pay securely online with Paystack."}
+                ? "Thank you for standing beside young people across Africa. Give by direct bank transfer locally in Nigeria or internationally via foreign currency wire."
+                : "Thank you for partnering with us to empower young African leaders. Give by bank transfer or pay securely online."}
             </DialogDescription>
 
             {as === "any" && (
@@ -140,34 +150,37 @@ export function GiveButton({
             key={shown}
             className={`${styles.panel} px-6 py-6 sm:px-8 sm:pb-8`}
           >
-            {shown === "individual" ? <BankTransfer /> : <OrganisationPayment />}
+            {shown === "individual" ? <BankTransfer who="individual" /> : <OrganisationGiving />}
           </div>
         </DialogContent>
       </Dialog>
     </>
   );
 }
+/* ------------------------------------------------------ Bank Transfer (Local & International) */
 
-/* ------------------------------------------------------ Individuals */
-
-function BankTransfer() {
+function BankTransfer({ who = "individual" }: { who?: "individual" | "company" }) {
+  const [category, setCategory] = useState<"local" | "international">("local");
   const [showNotice, setShowNotice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState("");
+  const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
-  const [bank, setBank] = useState(BANK_ACCOUNTS[0].bank);
+  const [selectedAccIndex, setSelectedAccIndex] = useState(0);
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
+
+  const currentAccount = BANK_ACCOUNTS[selectedAccIndex] || BANK_ACCOUNTS[0];
 
   const submitNotice = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    const naira = Number(amount.replace(/[^\d]/g, ""));
-    if (!naira || naira < 100) {
-      setError("Please enter a valid amount of at least ₦100.");
+    const cleanAmount = Number(amount.replace(/[^\d.]/g, ""));
+    if (!cleanAmount || cleanAmount < 1) {
+      setError("Please enter a valid amount.");
       return;
     }
     setBusy(true);
@@ -176,11 +189,13 @@ function BankTransfer() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          email,
-          bank,
-          amount: naira,
+          name: who === "company" && orgName.trim() ? `${orgName.trim()} (Attn: ${name.trim()})` : name.trim(),
+          email: email.trim(),
+          bank: currentAccount.bank,
+          currency: currentAccount.currency,
+          amount: cleanAmount,
           reference: reference.trim() || undefined,
+          note: who === "company" && orgName.trim() ? `Organisation: ${orgName.trim()}` : undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -198,23 +213,137 @@ function BankTransfer() {
 
   return (
     <>
-      <div className="flex flex-col gap-3">
-        {BANK_ACCOUNTS.map((a) => (
-          <div key={a.accountNumber} className="relative overflow-hidden rounded-2xl bg-[#003E45] p-5 text-white">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -top-16 -right-16 size-44 rounded-full bg-[radial-gradient(closest-side,rgb(92_225_230/0.3),transparent)]"
-            />
-            <p className="relative text-[13px] font-semibold text-[#5CE1E6]">{a.bank}</p>
-            <div className="relative mt-2 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[24px] font-bold tracking-[0.08em] tabular-nums">{a.accountNumber}</span>
-              <CopyButton value={a.accountNumber} label={`${a.bank} account number`} />
-            </div>
-            <p className="relative mt-2 text-[14px] leading-snug text-white/80">{a.accountName}</p>
-          </div>
-        ))}
+      {/* Currency Category Toggle: Local (NGN) vs International (USD, GBP, EUR) */}
+      <div className="flex rounded-full bg-[#EEFCFC] p-1 dark:bg-white/5">
+        <button
+          type="button"
+          onClick={() => setCategory("local")}
+          className={`flex-1 rounded-full py-2 text-center text-xs font-bold transition-colors ${
+            category === "local"
+              ? "bg-[#003E45] text-white shadow-sm dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+              : "text-[#003E45]/70 hover:text-[#003E45] dark:text-white/60 dark:hover:text-white"
+          }`}
+        >
+          🇳🇬 Local Transfer (NGN ₦)
+        </button>
+        <button
+          type="button"
+          onClick={() => setCategory("international")}
+          className={`flex-1 rounded-full py-2 text-center text-xs font-bold transition-colors ${
+            category === "international"
+              ? "bg-[#003E45] text-white shadow-sm dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+              : "text-[#003E45]/70 hover:text-[#003E45] dark:text-white/60 dark:hover:text-white"
+          }`}
+        >
+          🌐 International Wire (USD, GBP, EUR)
+        </button>
       </div>
 
+      {category === "local" ? (
+        /* Local NGN Accounts */
+        <div className="mt-4 flex flex-col gap-3">
+          {LOCAL_ACCOUNTS.map((a) => (
+            <div key={a.accountNumber} className="relative overflow-hidden rounded-2xl bg-[#003E45] p-5 text-white">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-16 -right-16 size-44 rounded-full bg-[radial-gradient(closest-side,rgb(92_225_230/0.3),transparent)]"
+              />
+              <div className="relative flex items-center justify-between gap-2">
+                <p className="text-[13px] font-semibold text-[#5CE1E6]">{a.bank}</p>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-white/90">
+                  {a.currency} ({a.currencySymbol})
+                </span>
+              </div>
+              <div className="relative mt-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[24px] font-bold tracking-[0.08em] tabular-nums">{a.accountNumber}</span>
+                <CopyButton value={a.accountNumber} label={`${a.bank} account number`} />
+              </div>
+              <p className="relative mt-2 text-[14px] leading-snug text-white/80">{a.accountName}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* International Domiciliary Accounts (USD, GBP, EUR) */
+        <div className="mt-4 flex flex-col gap-3">
+          {/* GTBank SWIFT / BIC Code Box */}
+          <div className="relative overflow-hidden rounded-2xl border border-[#5CE1E6]/40 bg-[#003E45]/[0.05] p-4.5 sm:p-5 dark:border-[#5CE1E6]/30 dark:bg-white/[0.04]">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="text-[11px] font-bold tracking-wider uppercase text-[#0b6b75] dark:text-[#5CE1E6]">
+                  GTBank SWIFT / BIC Code
+                </span>
+                <p className="mt-0.5 font-mono text-[22px] font-bold tracking-[0.1em] text-[#003E45] dark:text-white">
+                  {GTBANK_INTERNATIONAL_WIRE.swiftCode}
+                </p>
+              </div>
+              <CopyButton value={GTBANK_INTERNATIONAL_WIRE.swiftCode} label="GTBank SWIFT code" />
+            </div>
+            <p className="mt-2 text-[13px] leading-relaxed text-[#555] dark:text-white/70">
+              Required by international banks worldwide to route wires directly into our Guaranty Trust Bank domiciliary accounts.
+            </p>
+          </div>
+
+          {/* Domiciliary Currency Cards */}
+          {INTERNATIONAL_ACCOUNTS.map((a) => (
+            <div key={a.accountNumber} className="relative overflow-hidden rounded-2xl bg-[#003E45] p-5 text-white">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-16 -right-16 size-44 rounded-full bg-[radial-gradient(closest-side,rgb(92_225_230/0.3),transparent)]"
+              />
+              <div className="relative flex items-center justify-between gap-2">
+                <p className="text-[13px] font-semibold text-[#5CE1E6]">{a.bank}</p>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-white/90">
+                  {a.currency} ({a.currencySymbol})
+                </span>
+              </div>
+              <div className="relative mt-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[24px] font-bold tracking-[0.08em] tabular-nums">{a.accountNumber}</span>
+                <CopyButton value={a.accountNumber} label={`${a.bank} account number`} />
+              </div>
+              <p className="relative mt-2 text-[14px] leading-snug text-white/80">{a.accountName}</p>
+            </div>
+          ))}
+
+          {/* Expandable Wire Routing / Correspondent Banks Details */}
+          <details className="group rounded-2xl border border-[#003E45]/15 bg-[#FAFDFD] p-4 text-[13px] dark:border-white/10 dark:bg-white/5">
+            <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#003E45] dark:text-[#5CE1E6]">
+              <span>Correspondent banking & wire routing details</span>
+              <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="mt-3 space-y-3 border-t border-black/5 pt-3 dark:border-white/5">
+              <div>
+                <strong className="block font-semibold text-[#222] dark:text-white">Beneficiary Bank:</strong>
+                <span className="text-[#555] dark:text-white/70">
+                  {GTBANK_INTERNATIONAL_WIRE.bankName} &bull; {GTBANK_INTERNATIONAL_WIRE.bankAddress}
+                </span>
+              </div>
+              <div>
+                <strong className="block font-semibold text-[#222] dark:text-white">USD ($) Transfers via Citibank NY:</strong>
+                <span className="text-[#555] dark:text-white/70">
+                  Correspondent: Citibank, New York &bull; SWIFT: <code className="font-mono font-bold">CITIUS33</code> &bull; Fedwire/ABA: <code className="font-mono">021000089</code>
+                </span>
+              </div>
+              <div>
+                <strong className="block font-semibold text-[#222] dark:text-white">GBP (£) Transfers via Standard Chartered London:</strong>
+                <span className="text-[#555] dark:text-white/70">
+                  Correspondent: Standard Chartered Bank, London &bull; SWIFT: <code className="font-mono font-bold">SCBLGB2L</code> &bull; Sort Code: <code className="font-mono">60-91-04</code>
+                </span>
+              </div>
+              <div>
+                <strong className="block font-semibold text-[#222] dark:text-white">EUR (€) Transfers via Citibank London:</strong>
+                <span className="text-[#555] dark:text-white/70">
+                  Correspondent: Citibank, London &bull; SWIFT: <code className="font-mono font-bold">CITIGB2L</code> &bull; Sort Code: <code className="font-mono">18-50-08</code> (or Deutsche Bank Frankfurt, SWIFT: <code className="font-mono">DEUTDEFF</code>)
+                </span>
+              </div>
+              <div className="rounded-lg bg-[#003E45]/5 p-2.5 text-[12px] leading-relaxed text-[#444] dark:bg-white/5 dark:text-white/75">
+                <strong>Remittance Instruction:</strong> Please instruct your sending bank to include the Beneficiary Account Name and the specific account number in SWIFT Field 59/70 (Details of Payment).
+              </div>
+            </div>
+          </details>
+        </div>
+      )}
+
+      {/* Confirmation Notice Form or Actions */}
       {success ? (
         <div className="mt-5 rounded-2xl bg-[#EEFCFC] p-5 text-[#003E45] dark:bg-[#003E45]/40 dark:text-[#5CE1E6]">
           <div className="flex items-center gap-2 font-bold text-[16px]">
@@ -245,7 +374,9 @@ function BankTransfer() {
             Confirm your bank transfer
           </p>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[#444] dark:text-white/70">Your name</label>
+            <label className="text-xs font-semibold text-[#444] dark:text-white/70">
+              {who === "company" ? "Contact person name" : "Your name"}
+            </label>
             <input
               required
               value={name}
@@ -254,6 +385,17 @@ function BankTransfer() {
               placeholder="Full Name"
             />
           </div>
+          {who === "company" && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-[#444] dark:text-white/70">Organisation / Company name</label>
+              <input
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                className={inputClass}
+                placeholder="Company Ltd / Foundation"
+              />
+            </div>
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-[#444] dark:text-white/70">
               Your email (for confirmation receipt)
@@ -269,27 +411,29 @@ function BankTransfer() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-[#444] dark:text-white/70">Bank transferred to</label>
+              <label className="text-xs font-semibold text-[#444] dark:text-white/70">Account transferred to</label>
               <select
-                value={bank}
-                onChange={(e) => setBank(e.target.value)}
+                value={selectedAccIndex}
+                onChange={(e) => setSelectedAccIndex(Number(e.target.value))}
                 className={`${inputClass} cursor-pointer`}
               >
-                {BANK_ACCOUNTS.map((b) => (
-                  <option key={b.bank} value={b.bank}>
-                    {b.bank}
+                {BANK_ACCOUNTS.map((b, idx) => (
+                  <option key={b.accountNumber} value={idx}>
+                    {b.bank} ({b.currency} - {b.accountNumber})
                   </option>
                 ))}
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-[#444] dark:text-white/70">Amount (₦)</label>
+              <label className="text-xs font-semibold text-[#444] dark:text-white/70">
+                Amount ({currentAccount.currencySymbol})
+              </label>
               <input
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className={inputClass}
-                placeholder="e.g. 25,000"
+                placeholder={`e.g. ${currentAccount.currency === "NGN" ? "25,000" : "500"}`}
               />
             </div>
           </div>
@@ -327,8 +471,7 @@ function BankTransfer() {
       ) : (
         <>
           <p className="mt-5 text-[15px] leading-relaxed text-[#555] dark:text-white/65">
-            When you&rsquo;ve sent it, submit your transfer confirmation so we can email your receipt and thank you
-            properly.
+            When you&rsquo;ve completed your transfer, notify us so our finance team can verify and send your official receipt.
           </p>
           <div className="mt-4 flex flex-col gap-2.5">
             <button
@@ -340,17 +483,86 @@ function BankTransfer() {
               Notify us of your transfer
             </button>
             <a
-              href={`mailto:${CONFIRM_EMAIL}?subject=${encodeURIComponent("Transfer confirmation: my gift to the Mikaelson Initiative")}`}
+              href={`mailto:${who === "company" ? PARTNER_EMAIL : CONFIRM_EMAIL}?subject=${encodeURIComponent(
+                who === "company"
+                  ? "Corporate Transfer confirmation: gift to the Mikaelson Initiative"
+                  : "Transfer confirmation: my gift to the Mikaelson Initiative"
+              )}`}
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#003E45]/25 px-6 text-sm font-semibold text-[#003E45] transition-[transform,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#003E45] active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:border-white/25 dark:text-white dark:hover:border-white"
             >
               <Mail className="size-4" aria-hidden="true" />
               Or email confirmation manually
             </a>
           </div>
-          <p className="mt-3 text-center text-[13px] break-all text-[#555] dark:text-white/55">{CONFIRM_EMAIL}</p>
+          <p className="mt-3 text-center text-[13px] break-all text-[#555] dark:text-white/55">
+            {who === "company" ? PARTNER_EMAIL : CONFIRM_EMAIL}
+          </p>
+
+          {who === "individual" ? (
+            <p className="mt-4 border-t border-black/10 pt-4 text-center text-[13px] text-[#555] dark:border-white/10 dark:text-white/60">
+              Prefer to pay with card online?{" "}
+              <a
+                href={PAYSTACK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#003E45] underline underline-offset-2 dark:text-[#5CE1E6]"
+              >
+                Use our Paystack checkout page
+              </a>
+              .
+            </p>
+          ) : (
+            <p className="mt-4 border-t border-black/10 pt-4 text-center text-[13px] text-[#555] dark:border-white/10 dark:text-white/60">
+              Need a formal invoice, custom partnership, or MOU? Write to{" "}
+              <a
+                href={`mailto:${PARTNER_EMAIL}`}
+                className="font-semibold text-[#003E45] underline underline-offset-2 dark:text-[#5CE1E6]"
+              >
+                {PARTNER_EMAIL}
+              </a>
+              .
+            </p>
+          )}
         </>
       )}
     </>
+  );
+}
+
+/* ---------------------------------------------------- Organisations */
+
+function OrganisationGiving() {
+  const [method, setMethod] = useState<"transfer" | "online">("transfer");
+
+  return (
+    <div>
+      <div className="mb-6 flex rounded-full bg-[#EEFCFC] p-1 dark:bg-white/5">
+        <button
+          type="button"
+          onClick={() => setMethod("transfer")}
+          className={`flex-1 rounded-full py-2 text-center text-xs sm:text-sm font-semibold transition-colors ${
+            method === "transfer"
+              ? "bg-[#003E45] text-white shadow-sm dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+              : "text-[#003E45]/70 hover:text-[#003E45] dark:text-white/60 dark:hover:text-white"
+          }`}
+        >
+          Bank / Wire Transfer
+        </button>
+        <button
+          type="button"
+          onClick={() => setMethod("online")}
+          className={`flex-1 rounded-full py-2 text-center text-xs sm:text-sm font-semibold transition-colors ${
+            method === "online"
+              ? "bg-[#003E45] text-white shadow-sm dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+              : "text-[#003E45]/70 hover:text-[#003E45] dark:text-white/60 dark:hover:text-white"
+          }`}
+        >
+          Pay Online (Paystack)
+        </button>
+      </div>
+
+      {method === "transfer" ? <BankTransfer who="company" /> : <OrganisationPayment />}
+    </div>
   );
 }
 

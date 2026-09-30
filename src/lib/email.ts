@@ -445,6 +445,7 @@ export function buildTransferNoticeNotificationEmail({
   email,
   bank,
   amount,
+  currency = "NGN",
   reference,
   note,
 }: {
@@ -452,14 +453,16 @@ export function buildTransferNoticeNotificationEmail({
   email: string;
   bank: string;
   amount: number;
+  currency?: string;
   reference?: string;
   note?: string;
 }) {
-  const formattedAmount = formatNaira(amount);
+  const sym = currency === "USD" ? "$" : currency === "GBP" ? "£" : currency === "EUR" ? "€" : "₦";
+  const formattedAmount = currency === "NGN" ? formatNaira(amount) : `${sym}${amount.toLocaleString("en-US")}`;
 
   const bodyHtml = `
     <p style="margin-top: 0; line-height: 1.6; color: #444444;">
-      An individual donor has reported a bank transfer donation on the website.
+      A donor has reported a bank transfer contribution on the website.
     </p>
 
     <div style="margin: 24px 0; background-color: #FAFDFD; border: 1px solid #E5EFEF; border-radius: 12px; padding: 18px 22px;">
@@ -514,15 +517,18 @@ export function buildTransferNoticeConfirmationEmail({
   name,
   bank,
   amount,
+  currency = "NGN",
   reference,
 }: {
   name: string;
   bank: string;
   amount: number;
+  currency?: string;
   reference?: string;
 }) {
   const firstName = name.split(" ")[0] || "Friend";
-  const formattedAmount = formatNaira(amount);
+  const sym = currency === "USD" ? "$" : currency === "GBP" ? "£" : currency === "EUR" ? "€" : "₦";
+  const formattedAmount = currency === "NGN" ? formatNaira(amount) : `${sym}${amount.toLocaleString("en-US")}`;
 
   const bodyHtml = `
     <p style="margin-top: 0; font-size: 16px; line-height: 1.6; color: #222222;">

@@ -11,7 +11,8 @@ const transferNoticeSchema = z.object({
   name: z.string().trim().min(2, "Please enter your name.").max(120),
   email: z.string().trim().email("Please enter a valid email address.").max(200),
   bank: z.string().trim().min(2, "Please select the bank transferred to."),
-  amount: z.number().int().min(100, "Please enter a valid amount."),
+  currency: z.enum(["NGN", "USD", "GBP", "EUR"]).default("NGN").optional(),
+  amount: z.number().min(1, "Please enter a valid amount."),
   reference: z.string().trim().max(100).optional(),
   note: z.string().trim().max(1000).optional(),
 });
@@ -20,6 +21,9 @@ export async function POST(req: Request) {
   try {
     const json = await req.json();
     const data = transferNoticeSchema.parse(json);
+    const currency = data.currency || "NGN";
+    const sym = currency === "USD" ? "$" : currency === "GBP" ? "£" : currency === "EUR" ? "€" : "₦";
+    const formatted = `${sym}${data.amount.toLocaleString("en-US")}`;
 
     // 1. Alert the Mikaelson team
     const teamHtml = buildTransferNoticeNotificationEmail({
@@ -27,13 +31,14 @@ export async function POST(req: Request) {
       email: data.email,
       bank: data.bank,
       amount: data.amount,
+      currency,
       reference: data.reference,
       note: data.note,
     });
 
     await sendEmail({
       to: TEAM_EMAILS.donations,
-      subject: `[Transfer Notice] ₦${data.amount.toLocaleString("en-NG")} to ${data.bank} from ${data.name}`,
+      subject: `[Transfer Notice] ${formatted} to ${data.bank} from ${data.name}`,
       replyTo: data.email,
       html: teamHtml,
     });
@@ -43,12 +48,13 @@ export async function POST(req: Request) {
       name: data.name,
       bank: data.bank,
       amount: data.amount,
+      currency,
       reference: data.reference,
     });
 
     await sendEmail({
       to: data.email,
-      subject: `We received your transfer details: ₦${data.amount.toLocaleString("en-NG")} | Mikaelson Initiative`,
+      subject: `We received your transfer details: ${formatted} | Mikaelson Initiative`,
       html: donorHtml,
     });
 

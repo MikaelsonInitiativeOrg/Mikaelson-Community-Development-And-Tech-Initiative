@@ -10,6 +10,8 @@ import { PARTNER_EMAIL, PARTNER_STEPS, SUPPORTERS } from "@/features/website/pag
 import { btn } from "@/features/website/pages/sponsor/styles";
 import { ScrollLine } from "@/components/site/scroll-line";
 import wrap from "@/components/site/wrap.module.css";
+import circle from "@/components/site/circle.module.css";
+import styles from "@/features/website/pages/sponsor/supporters.module.css";
 
 export const metadata: Metadata = {
   title: "Sponsor & Support",
@@ -117,32 +119,36 @@ export default function SponsorPage() {
         </div>
       </section>
 
-      {/* Supporters: one logo plate, white in both modes so every mark stays legible. */}
+      {/* Supporters: logo cards circled sequentially by the scroll line, revealing their authentic colors. */}
       <section aria-labelledby="supporters-heading" className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6 md:py-28">
-        <Reveal className="grid gap-10 lg:grid-cols-12 lg:items-center">
-          <h2
-            id="supporters-heading"
-            className="text-[24px] leading-snug font-bold tracking-[-0.015em] md:text-[28px] lg:col-span-4"
-          >
-            Organizations and individuals that support and believe in our goal
-          </h2>
-          <ul className="grid grid-cols-2 overflow-hidden rounded-2xl border border-black/10 bg-white sm:grid-cols-3 lg:col-span-8 dark:border-white/10">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
+          <Reveal className="lg:col-span-4">
+            <h2
+              id="supporters-heading"
+              className="text-[24px] leading-snug font-bold tracking-[-0.015em] md:text-[28px]"
+            >
+              Organizations and individuals that support and believe in our goal
+            </h2>
+          </Reveal>
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:col-span-8">
             {SUPPORTERS.map((logo) => (
               <li
                 key={logo.alt}
-                className="-mb-px -ml-px flex h-28 items-center justify-center border-b border-l border-black/10 px-6 md:h-32"
+                data-circle
+                className={`${circle.item} ${styles.logoCard} flex h-28 items-center justify-center rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:h-32 dark:border-white/10 dark:bg-white`}
+                style={{ "--lift": 1.05 } as CSSProperties}
               >
                 <Image
                   src={logo.src}
                   alt={logo.alt}
                   width={logo.width}
                   height={logo.height}
-                  className="h-auto max-h-10 w-auto max-w-full object-contain opacity-80 grayscale"
+                  className={`${styles.logoImg} h-auto max-h-10 w-auto max-w-full object-contain`}
                 />
               </li>
             ))}
           </ul>
-        </Reveal>
+        </div>
       </section>
       </ScrollLine>
     </div>
