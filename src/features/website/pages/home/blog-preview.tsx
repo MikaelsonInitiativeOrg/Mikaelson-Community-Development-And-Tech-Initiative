@@ -1,27 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { client } from "@/sanity/lib/client";
+import { getAllPosts } from "@/lib/blog";
+import type { Post } from "@/features/website/pages/blog/posts";
 import { Reveal } from "@/components/site/motion/reveal";
 import { StaggerGroup, StaggerItem } from "@/components/site/motion/stagger";
 import styles from "./home.module.css";
-
-/**
- * "Our latest stories": one story from each part of the ecosystem, text
- * only (no images on the home page). Posts in Sanity are tagged by
- * category, not ecosystem, so categories are mapped (agreed with the
- * user): Communities → School Club, Innovation → Labs, Leadership →
- * Partnership & Growth Network. The Institute has no posts yet, so it
- * shows an honest "coming soon".
- */
-
-type Post = {
-  _id: string;
-  title: string;
-  slug: { current: string };
-  category?: string;
-  excerpt?: string;
-  publishedAt?: string;
-};
 
 const ECOSYSTEM_STORIES: { name: string; category: string | null; soon: string }[] = [
   { name: "Mikaelson School Club", category: "communities", soon: "Stories from our school clubs are on the way." },
@@ -29,10 +12,6 @@ const ECOSYSTEM_STORIES: { name: string; category: string | null; soon: string }
   { name: "Partnership & Growth Network", category: "leadership", soon: "Stories from the network are on the way." },
   { name: "Mikaelson Institute", category: null, soon: "Stories from the Institute are coming soon." },
 ];
-
-const query = `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
-  _id, title, slug, category, excerpt, publishedAt
-}`;
 
 // Stories link directly to their dedicated article pages.
 const storyHref = (post: Post) => `/blog/${encodeURIComponent(post.slug.current)}`;
@@ -45,7 +24,7 @@ function formatDate(date?: string) {
 export async function BlogPreview() {
   let posts: Post[] = [];
   try {
-    posts = await client.fetch<Post[]>(query, {}, { next: { revalidate: 60 } });
+    posts = await getAllPosts();
   } catch {
     posts = [];
   }

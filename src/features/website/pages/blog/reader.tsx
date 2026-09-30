@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink, X } from "lucide-react";
-import { formatDate, imageUrl, normalizeBody, readingMinutes, type Post } from "./posts";
+import { formatDate, imageUrl, readingMinutes, type Post } from "./posts";
 import { DrawnLine } from "./drawn-line";
 import { ShareBar } from "./share-bar";
 import styles from "./blog.module.css";
@@ -55,7 +55,7 @@ export function Reader({
   onNext: (slug: string) => void;
 }) {
   const slug = post.slug.current;
-  const body = useMemo(() => normalizeBody(post.body), [post.body]);
+  const body = post.body || "";
   const minutes = readingMinutes(post.body);
   const index = posts.findIndex((p) => p._id === post._id);
   const next = posts.length > 1 ? posts[(index + 1) % posts.length] : null;

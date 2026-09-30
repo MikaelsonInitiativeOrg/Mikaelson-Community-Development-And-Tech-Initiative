@@ -46,7 +46,7 @@ one ecosystem: the **Mikaelson School Club**, **Mikaelson Labs**, the
 | Styling | [Tailwind CSS 4](https://tailwindcss.com/), CSS modules for motion, `tailwind-merge`, `class-variance-authority` |
 | Motion | [Motion](https://motion.dev/) (`motion/react`) and plain CSS transitions/keyframes |
 | UI | [Radix UI](https://www.radix-ui.com/) (accordion, dialog, dropdown), [Lucide](https://lucide.dev/) icons, [Sonner](https://sonner.emilkowal.ski/) toasts, `react-country-flag` |
-| Content | [Sanity](https://www.sanity.io/) via `next-sanity` (blog posts) |
+| Content | In-house Editorial Studio (`/studio`) backed by [Neon Postgres](https://neon.tech/) |
 | Forms | React Hook Form + Zod |
 | Theme | `next-themes` (light and dark) |
 
@@ -63,13 +63,16 @@ npm install
 Create `.env.local` in the project root (it is gitignored):
 
 ```env
-NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
-NEXT_PUBLIC_SANITY_DATASET=production
+# database: Neon Postgres connection string (auto-injected on Vercel)
+DATABASE_URL=postgres://user:password@ep-example.region.neon.tech/neondb?sslmode=require
+# studio admin access passkey (defaults to mikaelson2026 if unset)
+STUDIO_ADMIN_PASSKEY=your_passkey_here
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 # server only: organisation payments (use an sk_test_ key locally)
 PAYSTACK_SECRET_KEY=sk_test_xxx
+# transactional emails
+RESEND_API_KEY=re_xxx
 # optional
-NEXT_PUBLIC_SANITY_API_VERSION=2026-03-07   # this is the default
 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=
 ```
 
@@ -91,7 +94,8 @@ npx tsc --noEmit # type check
 | `/about-us` | Mission, story, SDGs and team summary |
 | `/labs` | Mikaelson Labs, the innovation hub (the one technical-looking page) |
 | `/team` | The team as portrait cards that turn over, with search |
-| `/blog` | Stories from Sanity; posts open in place (`/blog?post=<slug>`) |
+| `/blog` | Stories hub; posts open in place (`/blog?post=<slug>`) with full dedicated article view |
+| `/studio` | In-house Editorial Studio for publishing stories, featuring pop-ups, and managing drafts |
 | `/sponsor` | Ways to give (bank transfer for individuals, Paystack for organisations), how to partner, supporters |
 | `/sponsor/thank-you` | Where Paystack returns organisations; verifies the payment (not indexed) |
 | `/volunteer` | Why people volunteer, the application (Google Form), FAQs |
@@ -111,6 +115,8 @@ src/
 │   ├── layout.tsx               root layout (fonts, theme, metadata template)
 │   ├── globals.css              Tailwind and global styles
 │   ├── sitemap.ts, robots.ts
+│   ├── studio/                  Editorial studio application (/studio)
+│   ├── api/studio/              Studio API routes (auth, CRUD posts)
 │   └── (website)/               the public routes (see Pages)
 │       └── layout.tsx           header + footer
 ├── components/
@@ -122,8 +128,7 @@ src/
 │   ├── pages/<page>/            components for each redesigned page
 │   └── components/              header, About page sections, shared pieces
 ├── constants/index.ts           team members and filters
-├── sanity/                      Sanity client, image helper and schemas
-└── lib/, types/                 utilities and shared types
+└── lib/, types/                 utilities, database (Neon), and shared types
 docs/REDESIGN.md                 the design and engineering record
 ```
 
@@ -151,10 +156,14 @@ Full detail is in [docs/REDESIGN.md](docs/REDESIGN.md). In short:
 
 ## Content: the blog
 
-Blog posts are written in Sanity (`src/sanity/schemaTypes/post.ts`) and
-fetched with a 60-second revalidate. Categories map to the ecosystem on the
-home page: Communities → School Club, Innovation → Labs, Leadership →
-Partnership & Growth Network.
+Stories are managed through our in-house Editorial Studio at `/studio` (protected by a team passkey configured via `STUDIO_ADMIN_PASSKEY`).
+All articles and settings are persisted to Neon Postgres (`DATABASE_URL`).
+Publishing a story automatically updates:
+- The main blog hub (`/blog`) and individual article pages (`/blog/[slug]`)
+- The homepage ecosystem preview (`BlogPreview`) and pop-up announcement (`BlogAnnouncementPopup` when flagged as featured)
+- The RSS feed (`/feed.xml`) and dynamic sitemap (`/sitemap.xml`)
+
+Categories map to the ecosystem on the home page: Communities → School Club, Innovation → Labs, Leadership → Partnership & Growth Network.
 
 ## Forms and payments
 
@@ -193,7 +202,7 @@ can do, and delete components when you stop using them.
   Option+Cmd+E).
 - **The scroll line doesn't appear or looks stuck.** Check in a visible
   browser tab; embedded or hidden previews pause animation frames.
-- **Blog is empty locally.** Check the Sanity variables in `.env.local`.
+- **Blog is empty locally.** The application automatically initializes built-in seed stories and falls back seamlessly in-memory if `DATABASE_URL` is omitted in local development. For production or persistent changes, ensure `DATABASE_URL` is configured in `.env.local` or Vercel.
 - **Stale build output.** `rm -rf .next && npm run dev`.
 
 ## Contact

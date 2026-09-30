@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { client } from "@/sanity/lib/client";
-import { postsWithBodyQuery, type Post } from "@/features/website/pages/blog/posts";
+import { getAllPosts } from "@/lib/blog";
+import type { Post } from "@/features/website/pages/blog/posts";
 
 export const revalidate = 60;
 
@@ -18,7 +18,7 @@ export async function GET() {
 
   let posts: Post[] = [];
   try {
-    posts = await client.fetch<Post[]>(postsWithBodyQuery);
+    posts = await getAllPosts();
   } catch {
     posts = [];
   }

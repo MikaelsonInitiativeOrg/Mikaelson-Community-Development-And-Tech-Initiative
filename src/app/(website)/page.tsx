@@ -4,8 +4,8 @@ import { ScrollLine } from "@/components/site/scroll-line";
 import OurEcosystemTabs from "@/features/website/pages/home/ecosystem-tabs";
 import { Closing, Hero, WalkWithUs, WhoWeServe } from "@/features/website/pages/home/sections";
 import { BlogPreview } from "@/features/website/pages/home/blog-preview";
-import { client } from "@/sanity/lib/client";
-import { popupPostQuery, type Post } from "@/features/website/pages/blog/posts";
+import { getPopupPost } from "@/lib/blog";
+import type { Post } from "@/features/website/pages/blog/posts";
 import { BlogAnnouncementPopup } from "@/features/website/pages/home/blog-popup";
 
 export const metadata: Metadata = {
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   let popupPost: Post | null = null;
   try {
-    popupPost = await client.fetch<Post | null>(popupPostQuery, {}, { next: { revalidate: 60 } });
+    popupPost = await getPopupPost();
   } catch {
     popupPost = null;
   }
@@ -113,7 +113,7 @@ export default async function HomePage() {
         <OurEcosystemTabs />
         <WhoWeServe />
         <WalkWithUs />
-        {/* The Sanity fetch streams in after the rest of the page. */}
+        {/* The stories fetch streams in after the rest of the page. */}
         <Suspense fallback={<div className="min-h-[480px] bg-white dark:bg-[#0a0f0f]" />}>
           <BlogPreview />
         </Suspense>

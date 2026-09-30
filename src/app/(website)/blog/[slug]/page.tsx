@@ -3,14 +3,10 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { client } from "@/sanity/lib/client";
+import { getAllPosts, getAllPostSlugs, getPostBySlug } from "@/lib/blog";
 import {
-  allPostSlugsQuery,
   formatDate,
   imageUrl,
-  normalizeBody,
-  postBySlugQuery,
-  postsWithBodyQuery,
   readingMinutes,
   type Post,
 } from "@/features/website/pages/blog/posts";
@@ -26,7 +22,7 @@ interface PageProps {
 
 export async function generateStaticParams() {
   try {
-    const posts = await client.fetch<{ slug: string }[]>(allPostSlugsQuery);
+    const posts = await getAllPostSlugs();
     return posts.map((p) => ({ slug: p.slug }));
   } catch {
     return [];
@@ -37,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   let post: Post | null = null;
   try {
-    post = await client.fetch<Post | null>(postBySlugQuery, { slug });
+    post = await getPostBySlug(slug);
   } catch {
     post = null;
   }
@@ -98,10 +94,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   let allPosts: Post[] = [];
 
   try {
-    [post, allPosts] = await Promise.all([
-      client.fetch<Post | null>(postBySlugQuery, { slug }),
-      client.fetch<Post[]>(postsWithBodyQuery),
-    ]);
+    [post, allPosts] = await Promise.all([getPostBySlug(slug), getAllPosts()]);
   } catch {
     post = null;
     allPosts = [];
@@ -114,7 +107,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
   const postUrl = `${siteUrl}/blog/${slug}`;
   const minutes = readingMinutes(post.body);
-  const normalizedBody = normalizeBody(post.body);
+  const bodyText = post.body || "";
 
   // Other stories to explore
   const relatedPosts = allPosts.filter((p) => p.slug.current !== slug).slice(0, 2);
@@ -243,11 +236,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                 <DrawnLine variant="path" className="mt-8 mb-10 h-6 w-40" />
 
-                {normalizedBody.length ? (
-                  <ArticleBody body={normalizedBody} />
-                ) : (
-                  <p className="text-base text-[#555] dark:text-white/60">This story has no text yet.</p>
-                )}
+                <ArticleBody body={bodyText} />
 
                 {/* Social Share Bar */}
                 <div className="mt-12 border-y border-black/10 py-6 dark:border-white/10">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { client } from "@/sanity/lib/client";
-import { postsWithBodyQuery, type Post } from "@/features/website/pages/blog/posts";
+import { getAllPosts } from "@/lib/blog";
+import type { Post } from "@/features/website/pages/blog/posts";
 import { BlogLab } from "@/features/website/pages/blog/blog-lab";
 import { ScrollLine } from "@/components/site/scroll-line";
 
@@ -9,11 +9,9 @@ export const revalidate = 60;
 const description =
   "Explore articles on leadership, personal development, and student growth from the Mikaelson Initiative. Insights written to inspire African students to think bigger and act with purpose.";
 
-// The real page's SEO basics, with the lab's title and noindex on top.
 export const metadata: Metadata = {
   title: "Blog | Ideas, Leadership & Growth",
-  description:
-    "Explore articles on leadership, personal development, and student growth from the Mikaelson Initiative. Insights written to inspire African students to think bigger and act with purpose.",
+  description,
   keywords: [
     "Mikaelson Initiative blog",
     "African student leadership",
@@ -66,7 +64,7 @@ export const metadata: Metadata = {
 export default async function BlogPage() {
   let posts: Post[] = [];
   try {
-    posts = await client.fetch(postsWithBodyQuery);
+    posts = await getAllPosts();
   } catch {
     posts = [];
   }

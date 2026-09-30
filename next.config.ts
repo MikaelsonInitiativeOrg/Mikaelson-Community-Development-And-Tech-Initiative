@@ -33,8 +33,9 @@ const headerRules = async () => [
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "cdn.sanity.io" },
+      { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "i.ytimg.com" },
+      { protocol: "https", hostname: "**" },
     ],
     formats: ["image/avif", "image/webp"],
   },

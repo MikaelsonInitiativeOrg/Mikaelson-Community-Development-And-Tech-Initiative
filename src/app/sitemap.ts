@@ -1,6 +1,5 @@
 import { MetadataRoute } from "next";
-import { client } from "@/sanity/lib/client";
-import { allPostSlugsQuery } from "@/features/website/pages/blog/posts";
+import { getAllPostSlugs } from "@/lib/blog";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
 
@@ -24,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let postPages: MetadataRoute.Sitemap = [];
   try {
-    const posts = await client.fetch<{ slug: string; publishedAt?: string; _updatedAt?: string }[]>(allPostSlugsQuery);
+    const posts = await getAllPostSlugs();
     postPages = posts.map((p) => ({
       url: `${siteUrl}/blog/${p.slug}`,
       lastModified: new Date(p._updatedAt || p.publishedAt || Date.now()),

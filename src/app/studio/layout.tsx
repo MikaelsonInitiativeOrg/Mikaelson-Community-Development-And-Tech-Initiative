@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mikaelson Initiative Studio | Blog & Content Editor",
+  title: "Mikaelson Studio | Content & Editorial Engine",
+  description: "Official editorial writing and publishing studio for the Mikaelson Initiative.",
   robots: {
     index: false,
     follow: false,
@@ -14,7 +15,7 @@ export default function StudioLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-white dark:bg-[#101112]">
+    <div className="min-h-screen bg-[#F4F9F9] text-[#111111] antialiased selection:bg-[#5CE1E6]/30 dark:bg-[#050A0A] dark:text-[#EEEEEE]">
       {children}
     </div>
   );
