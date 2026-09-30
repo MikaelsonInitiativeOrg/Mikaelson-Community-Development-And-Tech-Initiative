@@ -29,13 +29,30 @@ export async function BlogPreview() {
     posts = [];
   }
 
-  // Latest post per mapped category.
-  const latest = ECOSYSTEM_STORIES.map((eco) => ({
-    ...eco,
-    post: eco.category
-      ? posts.find((p) => p.category?.trim().toLowerCase().startsWith(eco.category as string))
-      : undefined,
-  }));
+  // Latest post per mapped category, or fall back to any available published posts so newly published stories are immediately visible
+  const usedSlugs = new Set<string>();
+  const latest = ECOSYSTEM_STORIES.map((eco) => {
+    let post = eco.category
+      ? posts.find(
+          (p) =>
+            !usedSlugs.has(p.slug.current) &&
+            p.category?.trim().toLowerCase().startsWith(eco.category as string)
+        )
+      : undefined;
+
+    if (!post) {
+      post = posts.find((p) => !usedSlugs.has(p.slug.current));
+    }
+
+    if (post) {
+      usedSlugs.add(post.slug.current);
+    }
+
+    return {
+      ...eco,
+      post,
+    };
+  });
 
   return (
     <section className="bg-white py-24 md:py-32 dark:bg-[#0a0f0f]">

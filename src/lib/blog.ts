@@ -150,8 +150,8 @@ export async function ensureTable() {
 
       ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS cover_image_fit TEXT DEFAULT 'contain';
       
-      -- Permanently remove seed posts so delete stays 100% effective
-      DELETE FROM blog_posts WHERE id IN ('seed-post-1', 'seed-post-2', 'seed-post-3') OR slug IN ('how-we-build-daily-discipline', 'building-real-world-tech-mikaelson-labs', 'african-studies-reclaiming-intellectual-heritage');
+      -- Permanently remove original seed posts by ID
+      DELETE FROM blog_posts WHERE id IN ('seed-post-1', 'seed-post-2', 'seed-post-3');
     `;
 
     tableInitialized = true;
@@ -300,7 +300,22 @@ export async function createPost(postData: Omit<Post, "_id">): Promise<Post> {
         ${newPost.status || "published"},
         ${newPost.seoTitle || null},
         ${newPost.seoDescription || null}
-      );
+      )
+      ON CONFLICT (slug) DO UPDATE SET
+        title = EXCLUDED.title,
+        category = EXCLUDED.category,
+        excerpt = EXCLUDED.excerpt,
+        cover_image = EXCLUDED.cover_image,
+        cover_image_fit = EXCLUDED.cover_image_fit,
+        author_name = EXCLUDED.author_name,
+        author_role = EXCLUDED.author_role,
+        author_avatar = EXCLUDED.author_avatar,
+        body = EXCLUDED.body,
+        updated_at = EXCLUDED.updated_at,
+        show_as_popup = EXCLUDED.show_as_popup,
+        status = EXCLUDED.status,
+        seo_title = EXCLUDED.seo_title,
+        seo_description = EXCLUDED.seo_description;
     `;
   } else {
     if (newPost.showAsPopup) {

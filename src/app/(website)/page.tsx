@@ -66,6 +66,9 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // No images on this page. The turquoise line drops down the page as you
 // scroll (ScrollLine), looping beside each heading marked data-stop.
 export default async function HomePage() {

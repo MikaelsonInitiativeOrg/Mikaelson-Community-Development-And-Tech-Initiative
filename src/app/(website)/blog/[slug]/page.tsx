@@ -14,7 +14,8 @@ import ArticleBody from "@/features/website/pages/blog/article-body";
 import { ShareBar } from "@/features/website/pages/blog/share-bar";
 import { DrawnLine } from "@/features/website/pages/blog/drawn-line";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

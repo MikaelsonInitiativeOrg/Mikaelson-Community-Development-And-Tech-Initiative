@@ -14,9 +14,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
+    const decodedId = decodeURIComponent(id);
     const data = await request.json();
 
-    const updated = await updatePost(id, data);
+    const updated = await updatePost(decodedId, data);
     if (!updated) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }

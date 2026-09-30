@@ -4,7 +4,8 @@ import type { Post } from "@/features/website/pages/blog/posts";
 import { BlogLab } from "@/features/website/pages/blog/blog-lab";
 import { ScrollLine } from "@/components/site/scroll-line";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const description =
   "Explore articles on leadership, personal development, and student growth from the Mikaelson Initiative. Insights written to inspire African students to think bigger and act with purpose.";

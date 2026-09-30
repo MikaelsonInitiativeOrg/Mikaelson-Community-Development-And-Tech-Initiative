@@ -32,8 +32,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
-    const slugStr = data.slug?.current || data.slug || data.title;
-    const slug = slugStr
+    const rawSlug = typeof data.slug === "string" ? data.slug : data.slug?.current;
+    const slugBase = (rawSlug && rawSlug.trim()) || data.title || `story-${Date.now()}`;
+    const slug = String(slugBase)
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, "-")
