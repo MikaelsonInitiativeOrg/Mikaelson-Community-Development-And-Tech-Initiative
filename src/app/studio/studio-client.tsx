@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,12 +14,15 @@ import {
   Eye,
   FileEdit,
   FolderOpen,
+  Highlighter,
   Image as ImageIcon,
   KeyRound,
   Layers,
+  Lightbulb,
   Lock,
   LogOut,
   Plus,
+  Quote,
   RefreshCw,
   Search,
   Sparkles,
@@ -30,6 +34,36 @@ import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggler";
 import ArticleBody from "@/features/website/pages/blog/article-body";
 import { formatDate, readingMinutes, type Post } from "@/features/website/pages/blog/posts";
+
+const ARTISTIC_STORY_TEMPLATE = `### The Power of 15 Minutes
+
+Every morning before academic periods commence, students in our partner schools gather in circles of eight. There is no lecture, no grading, and no lecturing adult. Instead, there is a student peer facilitator and an accountability sheet.
+
+Each student states three things:
+1. What habit they stayed true to yesterday.
+2. Where their discipline slipped and why.
+3. The singular pledge they are making for today.
+
+---
+
+> "Discipline is not an innate gift given to a chosen few; it is a muscle exercised in small, transparent daily steps."
+
+### Why Peer Accountability Sparks Growth
+
+When an adult tells a teenager to cultivate focus, it is often received as discipline from above. But when a student sees their desk mate admit to staying up scrolling on their phone and making a commitment to turn it off at 9 PM tonight, the dynamic shifts completely.
+
+In our first pilot across secondary schools:
+- Over ==84% of participating students== completed their weekly academic targets without parental reminders.
+- Punctuality across participating classes improved by ==62%==.
+- Teachers reported a noticeable drop in classroom disruptions.
+
+---
+
+> [!HIGHLIGHT] When young minds build for people they personally know and care about, education transforms from abstract lectures into active leadership.
+
+### Looking Ahead
+
+As we expand the Mikaelson School Club ecosystem, our mission remains grounded: creating environments where African students realize that greatness is not an accident—it is daily practice.`;
 
 const CATEGORY_PRESETS = [
   "Leadership & Discipline",
@@ -48,6 +82,9 @@ const SAMPLE_COVERS = [
 ];
 
 export function StudioClient({ initialAuthenticated }: { initialAuthenticated: boolean }) {
+  const searchParams = useSearchParams();
+  const editParam = searchParams.get("edit");
+
   const [authenticated, setAuthenticated] = useState(initialAuthenticated);
   const [passkeyInput, setPasskeyInput] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
@@ -77,13 +114,37 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
     }
   }, [authenticated]);
 
+  // Deep-link auto open post for editing from /blog/[slug] or ?edit=slug
+  useEffect(() => {
+    if (editParam && posts.length > 0 && !editingPost) {
+      const target = posts.find(
+        (p) => p.slug?.current === editParam || p._id === editParam
+      );
+      if (target) {
+        setEditingPost({ ...target });
+        setIsNew(false);
+      }
+    }
+  }, [editParam, posts, editingPost]);
+
   const loadPosts = async () => {
     setLoadingPosts(true);
     try {
       const res = await fetch("/api/studio/posts");
       if (res.ok) {
         const data = await res.json();
-        setPosts(data.posts || []);
+        const loadedPosts: Post[] = data.posts || [];
+        setPosts(loadedPosts);
+
+        if (editParam && !editingPost) {
+          const target = loadedPosts.find(
+            (p) => p.slug?.current === editParam || p._id === editParam
+          );
+          if (target) {
+            setEditingPost({ ...target });
+            setIsNew(false);
+          }
+        }
       } else if (res.status === 401) {
         setAuthenticated(false);
       }
@@ -137,6 +198,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
       category: "Leadership & Discipline",
       excerpt: "",
       coverImage: "/assets/images/community-1.png",
+      coverImageFit: "contain",
       author: {
         name: "Michael Segun",
         role: "Initiative Lead",
@@ -157,21 +219,50 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) return;
 
+    const toastId = toast.loading(`Deleting "${title}"...`);
     try {
-      const res = await fetch(`/api/studio/posts/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/studio/posts/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Story deleted.");
-        setPosts((prev) => prev.filter((p) => p._id !== id));
-        if (editingPost?._id === id) {
+        toast.success("Story permanently deleted.", { id: toastId });
+        setPosts((prev) => prev.filter((p) => p._id !== id && p.slug?.current !== id));
+        if (editingPost?._id === id || editingPost?.slug?.current === id) {
           setEditingPost(null);
         }
+        await loadPosts();
       } else {
-        toast.error("Failed to delete story.");
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || "Failed to delete story.", { id: toastId });
       }
     } catch {
-      toast.error("Error communicating with database.");
+      toast.error("Error communicating with database.", { id: toastId });
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to delete ALL blog stories? This will permanently wipe all existing posts and cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    const toastId = toast.loading("Deleting all stories...");
+    try {
+      const res = await fetch("/api/studio/posts", { method: "DELETE" });
+      if (res.ok) {
+        toast.success("All stories deleted permanently.", { id: toastId });
+        setPosts([]);
+        if (editingPost) setEditingPost(null);
+        await loadPosts();
+      } else {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || "Failed to delete all stories.", { id: toastId });
+      }
+    } catch {
+      toast.error("Network error deleting stories.", { id: toastId });
     }
   };
 
@@ -317,7 +408,11 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
     setUploadingCover(false);
 
     if (url) {
-      setEditingPost({ ...editingPost, coverImage: url });
+      setEditingPost({
+        ...editingPost,
+        coverImage: url,
+        coverImageFit: editingPost.coverImageFit || "contain",
+      });
       toast.success("Cover image uploaded successfully!", { id: toastId });
     } else {
       toast.dismiss(toastId);
@@ -340,7 +435,11 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
     setUploadingCover(false);
 
     if (url) {
-      setEditingPost({ ...editingPost, coverImage: url });
+      setEditingPost({
+        ...editingPost,
+        coverImage: url,
+        coverImageFit: editingPost.coverImageFit || "contain",
+      });
       toast.success("Cover image uploaded successfully!", { id: toastId });
     } else {
       toast.dismiss(toastId);
@@ -563,6 +662,17 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
               </button>
             </div>
 
+            {!isNew && editingPost.slug?.current && (
+              <Link
+                href={`/blog/${editingPost.slug.current}`}
+                target="_blank"
+                className="hidden sm:inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#003e45]/20 bg-[#e8f7f8]/50 px-3 text-xs font-bold text-[#003e45] hover:bg-[#003e45] hover:text-white transition-colors dark:border-white/20 dark:bg-white/5 dark:text-[#5ce1e6] dark:hover:bg-[#5ce1e6] dark:hover:text-black"
+              >
+                <span>View Live Site</span>
+                <ExternalLink className="size-3" />
+              </Link>
+            )}
+
             <button
               type="button"
               disabled={saving}
@@ -581,12 +691,12 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
               {saving ? (
                 <>
                   <RefreshCw className="size-3.5 animate-spin" aria-hidden="true" />
-                  <span>Publishing...</span>
+                  <span>{isNew ? "Publishing..." : "Updating..."}</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="size-3.5" aria-hidden="true" />
-                  <span>Publish to Website</span>
+                  <span>{isNew ? "Publish to Website" : "Save Changes"}</span>
                 </>
               )}
             </button>
@@ -753,45 +863,119 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
 
                 {/* Cover Image Preview (if set) */}
                 {editingPost.coverImage && (
-                  <div className="mt-2 overflow-hidden rounded-2xl border border-black/10 bg-[#F4F9F9] dark:border-white/10 dark:bg-white/[0.03]">
-                    <div className="relative h-48 w-full sm:h-56">
-                      <Image
-                        src={editingPost.coverImage}
-                        alt="Cover image preview"
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-                        <span className="truncate rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm max-w-[65%]">
-                          {editingPost.coverImage.startsWith("/api/studio/media")
-                            ? "Uploaded file"
-                            : editingPost.coverImage}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => coverFileInputRef.current?.click()}
-                            disabled={uploadingCover}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-xs font-bold text-[#003E45] shadow-sm backdrop-blur-sm transition-all hover:bg-white active:scale-95 dark:bg-[#5CE1E6] dark:text-[#050A0A]"
-                          >
-                            {uploadingCover ? (
-                              <RefreshCw className="size-3.5 animate-spin" />
-                            ) : (
-                              <Upload className="size-3.5" aria-hidden="true" />
-                            )}
-                            <span>{uploadingCover ? "Uploading..." : "Replace"}</span>
-                          </button>
-                          <button
-                            type="button"
-                            title="Remove cover image"
-                            onClick={() => setEditingPost({ ...editingPost, coverImage: "" })}
-                            className="inline-flex items-center justify-center size-8 rounded-lg bg-rose-600/90 text-white backdrop-blur-sm transition-colors hover:bg-rose-700 active:scale-95"
-                          >
-                            <Trash2 className="size-3.5" aria-hidden="true" />
-                          </button>
+                  <div className="mt-2 space-y-2">
+                    <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#F4F9F9] dark:border-white/10 dark:bg-white/[0.03]">
+                      <div className="relative">
+                        {editingPost.coverImageFit === "cover" || editingPost.coverImageFit === "top" ? (
+                          <div className="relative h-52 w-full sm:h-60">
+                            <Image
+                              src={editingPost.coverImage}
+                              alt="Cover image preview"
+                              fill
+                              unoptimized
+                              className={`object-cover ${
+                                editingPost.coverImageFit === "top" ? "object-top" : "object-center"
+                              }`}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                          </div>
+                        ) : (
+                          <div className="flex h-64 w-full items-center justify-center p-3 sm:h-72">
+                            <img
+                              src={editingPost.coverImage}
+                              alt="Cover image preview"
+                              className="max-h-full w-auto max-w-full rounded-xl object-contain shadow-sm"
+                            />
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2 border-t border-black/5 bg-black/60 p-2.5 backdrop-blur-md dark:border-white/10 dark:bg-black/75">
+                          <span className="truncate rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white max-w-[60%]">
+                            {editingPost.coverImage.startsWith("/api/studio/media")
+                              ? "Uploaded media file"
+                              : editingPost.coverImage}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => coverFileInputRef.current?.click()}
+                              disabled={uploadingCover}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#003E45] shadow-sm transition-all hover:bg-[#EEFCFC] active:scale-95 dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+                            >
+                              {uploadingCover ? (
+                                <RefreshCw className="size-3.5 animate-spin" />
+                              ) : (
+                                <Upload className="size-3.5" aria-hidden="true" />
+                              )}
+                              <span>{uploadingCover ? "Uploading..." : "Replace"}</span>
+                            </button>
+                            <button
+                              type="button"
+                              title="Remove cover image"
+                              onClick={() => setEditingPost({ ...editingPost, coverImage: "" })}
+                              className="inline-flex items-center justify-center size-8 rounded-lg bg-rose-600/90 text-white transition-colors hover:bg-rose-700 active:scale-95"
+                            >
+                              <Trash2 className="size-3.5" aria-hidden="true" />
+                            </button>
+                          </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Framing & Display Control */}
+                    <div className="rounded-2xl border border-black/10 bg-[#FAFDFD] p-3 dark:border-white/10 dark:bg-white/[0.02]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#003E45] dark:text-[#5CE1E6]">
+                          Photo Framing Mode
+                        </span>
+                        <span className="text-[11px] text-[#666] dark:text-white/60">
+                          {editingPost.coverImageFit === "top"
+                            ? "Keeps head & face visible"
+                            : editingPost.coverImageFit === "cover"
+                            ? "Fills banner with center crop"
+                            : "Displays entire picture without cropping"}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingPost({ ...editingPost, coverImageFit: "contain" })}
+                          className={`flex flex-col items-center justify-center rounded-xl p-2.5 text-center transition-all ${
+                            (editingPost.coverImageFit || "contain") === "contain"
+                              ? "bg-[#003E45] text-white shadow-sm ring-2 ring-[#003E45]/30 dark:bg-[#5CE1E6] dark:text-[#050A0A] dark:ring-[#5CE1E6]/40"
+                              : "border border-black/10 bg-white text-[#444] hover:bg-black/5 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                          }`}
+                        >
+                          <span className="text-xs font-bold">🖼️ Full Photo</span>
+                          <span className="text-[10px] opacity-80">Uncropped / Complete</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setEditingPost({ ...editingPost, coverImageFit: "top" })}
+                          className={`flex flex-col items-center justify-center rounded-xl p-2.5 text-center transition-all ${
+                            editingPost.coverImageFit === "top"
+                              ? "bg-[#003E45] text-white shadow-sm ring-2 ring-[#003E45]/30 dark:bg-[#5CE1E6] dark:text-[#050A0A] dark:ring-[#5CE1E6]/40"
+                              : "border border-black/10 bg-white text-[#444] hover:bg-black/5 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                          }`}
+                        >
+                          <span className="text-xs font-bold">👤 Focus Top</span>
+                          <span className="text-[10px] opacity-80">Faces & People</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setEditingPost({ ...editingPost, coverImageFit: "cover" })}
+                          className={`flex flex-col items-center justify-center rounded-xl p-2.5 text-center transition-all ${
+                            editingPost.coverImageFit === "cover"
+                              ? "bg-[#003E45] text-white shadow-sm ring-2 ring-[#003E45]/30 dark:bg-[#5CE1E6] dark:text-[#050A0A] dark:ring-[#5CE1E6]/40"
+                              : "border border-black/10 bg-white text-[#444] hover:bg-black/5 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                          }`}
+                        >
+                          <span className="text-xs font-bold">🔲 Fill Banner</span>
+                          <span className="text-[10px] opacity-80">Center Zoom Crop</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -900,35 +1084,56 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
 
               {/* Body Markdown Content */}
               <div>
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-[#555] dark:text-white/70">
-                    Story Content (Markdown)
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#003E45] dark:text-[#5CE1E6]">
+                    Story Content (Artistic Layout)
                   </label>
-                  <span className="text-xs text-[#777] dark:text-white/40">{minutes} min read</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editingPost.body && editingPost.body.trim().length > 15) {
+                          if (
+                            !confirm(
+                              "Replace current story content with the Mikaelson Artistic Template?"
+                            )
+                          )
+                            return;
+                        }
+                        setEditingPost({ ...editingPost, body: ARTISTIC_STORY_TEMPLATE });
+                        toast.success("Loaded artistic story template!");
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[#003E45]/20 bg-[#EEFCFC] px-3 py-1 text-[11px] font-bold text-[#003E45] transition-all hover:bg-[#003E45] hover:text-white active:scale-95 dark:border-[#5CE1E6]/30 dark:bg-white/5 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6] dark:hover:text-black"
+                    >
+                      <Sparkles className="size-3" />
+                      <span>✨ Load Artistic Template</span>
+                    </button>
+                    <span className="text-xs text-[#777] dark:text-white/40">{minutes} min read</span>
+                  </div>
                 </div>
 
                 {/* Markdown Toolbar */}
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-t-xl border border-b-0 border-black/15 bg-black/[0.03] p-2 dark:border-white/15 dark:bg-white/5">
                   <button
                     type="button"
-                    title="Heading 2"
+                    title="Section Heading (H2)"
                     onClick={() => insertMarkdown("## ")}
-                    className="rounded px-2 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
+                    className="rounded px-2.5 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     H2
                   </button>
                   <button
                     type="button"
-                    title="Heading 3"
+                    title="Subheading (H3)"
                     onClick={() => insertMarkdown("### ")}
-                    className="rounded px-2 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
+                    className="rounded px-2.5 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     H3
                   </button>
                   <span className="h-4 w-px bg-black/15 dark:bg-white/15" />
                   <button
                     type="button"
-                    title="Bold"
+                    title="Bold text"
                     onClick={() => insertMarkdown("**", "**")}
                     className="rounded px-2 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
@@ -936,7 +1141,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   </button>
                   <button
                     type="button"
-                    title="Italic"
+                    title="Italic text"
                     onClick={() => insertMarkdown("*", "*")}
                     className="rounded px-2 py-1 text-xs italic text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
@@ -944,17 +1149,54 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   </button>
                   <button
                     type="button"
-                    title="Quote"
-                    onClick={() => insertMarkdown("> ")}
-                    className="rounded px-2 py-1 text-xs text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
+                    title="Turquoise Highlight ==text=="
+                    onClick={() => insertMarkdown("==", "==")}
+                    className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold text-[#003E45] hover:bg-black/10 dark:text-[#5CE1E6] dark:hover:bg-white/10"
                   >
-                    Quote
+                    <Highlighter className="size-3" />
+                    <span>Highlight</span>
                   </button>
+
                   <span className="h-4 w-px bg-black/15 dark:bg-white/15" />
+
+                  {/* Artistic Squiggle Divider */}
+                  <button
+                    type="button"
+                    title="Insert signature turquoise hand-drawn wavy line divider"
+                    onClick={() => insertMarkdown("\n\n---\n\n")}
+                    className="inline-flex items-center gap-1 rounded bg-[#003E45]/10 px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/20 dark:bg-[#5CE1E6]/15 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6]/25"
+                  >
+                    <span>〰️ Wavy Line</span>
+                  </button>
+
+                  {/* Cyan Pullquote */}
+                  <button
+                    type="button"
+                    title="Insert signature cyan pullquote with left accent bar"
+                    onClick={() => insertMarkdown('\n\n> "Add your inspiring pullquote here..."\n\n')}
+                    className="inline-flex items-center gap-1 rounded bg-[#003E45]/10 px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/20 dark:bg-[#5CE1E6]/15 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6]/25"
+                  >
+                    <Quote className="size-3" />
+                    <span>Pullquote</span>
+                  </button>
+
+                  {/* Key Insight Callout */}
+                  <button
+                    type="button"
+                    title="Insert highlighted takeaway card"
+                    onClick={() => insertMarkdown('\n\n> [!HIGHLIGHT] Add a key insight or breakthrough takeaway here.\n\n')}
+                    className="inline-flex items-center gap-1 rounded bg-[#003E45]/10 px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/20 dark:bg-[#5CE1E6]/15 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6]/25"
+                  >
+                    <Lightbulb className="size-3" />
+                    <span>Key Insight</span>
+                  </button>
+
+                  <span className="h-4 w-px bg-black/15 dark:bg-white/15" />
+
                   <button
                     type="button"
                     title="Bullet List"
-                    onClick={() => insertMarkdown("- ")}
+                    onClick={() => insertMarkdown("\n- Milestone 1\n- Milestone 2\n")}
                     className="rounded px-2 py-1 text-xs text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     • List
@@ -962,12 +1204,11 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <button
                     type="button"
                     title="Numbered List"
-                    onClick={() => insertMarkdown("1. ")}
+                    onClick={() => insertMarkdown("\n1. Step one\n2. Step two\n3. Step three\n")}
                     className="rounded px-2 py-1 text-xs text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     1. List
                   </button>
-                  <span className="h-4 w-px bg-black/15 dark:bg-white/15" />
                   <button
                     type="button"
                     title="Insert Link"
@@ -990,7 +1231,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
 
                   <button
                     type="button"
-                    title="Upload and insert an image into the story"
+                    title="Upload and insert an uncropped image into the story"
                     disabled={uploadingBodyImage}
                     onClick={() => bodyFileInputRef.current?.click()}
                     className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/10 dark:text-[#5CE1E6] dark:hover:bg-white/10"
@@ -1007,8 +1248,8 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                 <div className="relative">
                   <textarea
                     id="story-body-input"
-                    rows={14}
-                    placeholder="Write your story using markdown... (Tip: You can drag & drop images directly onto this box!)"
+                    rows={15}
+                    placeholder="Write your story using markdown... (Tip: Click 'Load Artistic Template' above to start with a gorgeous layout!)"
                     value={editingPost.body || ""}
                     onChange={(e) => setEditingPost({ ...editingPost, body: e.target.value })}
                     onDragOver={(e) => e.preventDefault()}
@@ -1026,9 +1267,18 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   )}
                 </div>
 
-                <p className="mt-1.5 text-[11px] text-[#777] dark:text-white/40">
-                  Tip: Use the <strong>Upload Image</strong> button or drag and drop images directly into the text editor.
-                </p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#666] dark:text-white/50">
+                  <p>
+                    Tip: Use <strong>〰️ Wavy Line</strong>, <strong>💬 Pullquote</strong>, and <strong>💡 Key Insight</strong> to make your article artistic!
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('\n\n---\n\n> "Add your memorable quote here."\n\n')}
+                    className="font-medium text-[#0097A7] hover:underline dark:text-[#5CE1E6]"
+                  >
+                    + Insert Wavy Line & Quote
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1050,15 +1300,28 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                 </div>
 
                 {editingPost.coverImage ? (
-                  <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-[#e8f7f8] dark:bg-white/5">
-                    <Image
-                      src={editingPost.coverImage}
-                      alt={editingPost.title}
-                      fill
-                      sizes="720px"
-                      className="object-cover"
-                    />
-                  </div>
+                  editingPost.coverImageFit === "cover" || editingPost.coverImageFit === "top" ? (
+                    <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-[#e8f7f8] dark:bg-white/5">
+                      <Image
+                        src={editingPost.coverImage}
+                        alt={editingPost.title || "Preview cover"}
+                        fill
+                        unoptimized
+                        sizes="720px"
+                        className={`object-cover ${
+                          editingPost.coverImageFit === "top" ? "object-top" : "object-center"
+                        }`}
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative flex items-center justify-center overflow-hidden rounded-2xl bg-[#0a1213]/5 p-2 sm:p-4 dark:bg-white/[0.03]">
+                      <img
+                        src={editingPost.coverImage}
+                        alt={editingPost.title || "Preview cover"}
+                        className="max-h-[480px] w-auto max-w-full rounded-xl object-contain shadow-sm"
+                      />
+                    </div>
+                  )
                 ) : null}
 
                 <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-[#666] dark:text-white/60">
@@ -1220,6 +1483,18 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   {cat}
                 </button>
               ))}
+
+              {posts.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100 hover:text-rose-700 sm:ml-2 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+                  title="Permanently delete all existing stories"
+                >
+                  <Trash2 className="size-3" />
+                  <span>Delete All Blogs</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -1263,7 +1538,13 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                             alt=""
                             fill
                             sizes="64px"
-                            className="object-cover"
+                            className={
+                              post.coverImageFit === "top"
+                                ? "object-cover object-top"
+                                : post.coverImageFit === "contain"
+                                ? "object-contain p-1"
+                                : "object-cover"
+                            }
                           />
                         </div>
                       ) : null}
@@ -1294,7 +1575,11 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                           ) : null}
                         </div>
 
-                        <h3 className="mt-1 font-bold text-base text-[#111] dark:text-white">
+                        <h3
+                          onClick={() => handleEdit(post)}
+                          className="mt-1 font-bold text-base text-[#111] dark:text-white cursor-pointer hover:text-[#003e45] dark:hover:text-[#5ce1e6] transition-colors"
+                          title="Click to edit story"
+                        >
                           {post.title}
                         </h3>
 
@@ -1341,10 +1626,11 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                       <button
                         type="button"
                         onClick={() => handleEdit(post)}
-                        className="inline-flex size-9 items-center justify-center rounded-full bg-[#003e45] text-white hover:bg-[#002b30] dark:bg-[#5ce1e6] dark:text-black dark:hover:bg-[#4bcdd2]"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#003e45] px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#002b30] active:scale-95 dark:bg-[#5ce1e6] dark:text-[#050a0a] dark:hover:bg-[#4bcdd2]"
                         title="Edit story"
                       >
-                        <FileEdit className="size-4" />
+                        <FileEdit className="size-3.5" aria-hidden="true" />
+                        <span>Edit Story</span>
                       </button>
 
                       <button

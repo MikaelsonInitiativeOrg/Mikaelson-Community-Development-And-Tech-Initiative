@@ -114,7 +114,7 @@ We believe that when students understand the intellectual depth of their heritag
 ];
 
 // In-memory fallback cache when running locally without DATABASE_URL
-let inMemoryPosts: Post[] = [...SEED_POSTS];
+let inMemoryPosts: Post[] = [];
 
 let tableInitialized = false;
 
@@ -135,6 +135,7 @@ export async function ensureTable() {
         category TEXT NOT NULL,
         excerpt TEXT NOT NULL,
         cover_image TEXT,
+        cover_image_fit TEXT DEFAULT 'contain',
         author_name TEXT NOT NULL DEFAULT 'Mikaelson Initiative',
         author_role TEXT DEFAULT 'Contributor',
         author_avatar TEXT,
@@ -146,29 +147,12 @@ export async function ensureTable() {
         seo_title TEXT,
         seo_description TEXT
       );
+
+      ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS cover_image_fit TEXT DEFAULT 'contain';
+      
+      -- Permanently remove seed posts so delete stays 100% effective
+      DELETE FROM blog_posts WHERE id IN ('seed-post-1', 'seed-post-2', 'seed-post-3') OR slug IN ('how-we-build-daily-discipline', 'building-real-world-tech-mikaelson-labs', 'african-studies-reclaiming-intellectual-heritage');
     `;
-
-    // Check if table is empty, seed if empty
-    const countResult = (await sql`SELECT COUNT(*) as count FROM blog_posts;`) as any[];
-    const count = parseInt(countResult[0]?.count || "0", 10);
-
-    if (count === 0) {
-      for (const p of SEED_POSTS) {
-        await sql`
-          INSERT INTO blog_posts (
-            id, title, slug, category, excerpt, cover_image,
-            author_name, author_role, author_avatar, body,
-            published_at, updated_at, show_as_popup, status
-          ) VALUES (
-            ${p._id}, ${p.title}, ${p.slug.current}, ${p.category || "General"}, ${p.excerpt || ""},
-            ${p.coverImage || null}, ${p.author?.name || "Mikaelson Initiative"},
-            ${p.author?.role || "Contributor"}, ${p.author?.avatar || null}, ${p.body || ""},
-            ${p.publishedAt || new Date().toISOString()}, ${p._updatedAt || new Date().toISOString()},
-            ${p.showAsPopup || false}, ${p.status || "published"}
-          ) ON CONFLICT (slug) DO NOTHING;
-        `;
-      }
-    }
 
     tableInitialized = true;
   } catch (err) {
@@ -184,6 +168,7 @@ function rowToPost(row: any): Post {
     category: row.category,
     excerpt: row.excerpt,
     coverImage: row.cover_image,
+    coverImageFit: (row.cover_image_fit as "contain" | "cover" | "top") || "contain",
     author: {
       name: row.author_name || "Mikaelson Initiative",
       role: row.author_role || undefined,
@@ -298,13 +283,13 @@ export async function createPost(postData: Omit<Post, "_id">): Promise<Post> {
 
     await sql`
       INSERT INTO blog_posts (
-        id, title, slug, category, excerpt, cover_image,
+        id, title, slug, category, excerpt, cover_image, cover_image_fit,
         author_name, author_role, author_avatar, body,
         published_at, updated_at, show_as_popup, status,
         seo_title, seo_description
       ) VALUES (
         ${newPost._id}, ${newPost.title}, ${newPost.slug.current}, ${newPost.category || "General"},
-        ${newPost.excerpt || ""}, ${newPost.coverImage || null},
+        ${newPost.excerpt || ""}, ${newPost.coverImage || null}, ${newPost.coverImageFit || "contain"},
         ${newPost.author?.name || "Mikaelson Initiative"},
         ${newPost.author?.role || "Contributor"},
         ${newPost.author?.avatar || null},
@@ -353,6 +338,7 @@ export async function updatePost(id: string, postData: Partial<Post>): Promise<P
         category = COALESCE(${postData.category ?? null}, category),
         excerpt = COALESCE(${postData.excerpt ?? null}, excerpt),
         cover_image = COALESCE(${postData.coverImage ?? null}, cover_image),
+        cover_image_fit = COALESCE(${postData.coverImageFit ?? null}, cover_image_fit),
         author_name = COALESCE(${postData.author?.name ?? null}, author_name),
         author_role = COALESCE(${postData.author?.role ?? null}, author_role),
         author_avatar = COALESCE(${postData.author?.avatar ?? null}, author_avatar),
@@ -362,7 +348,7 @@ export async function updatePost(id: string, postData: Partial<Post>): Promise<P
         seo_title = COALESCE(${postData.seoTitle ?? null}, seo_title),
         seo_description = COALESCE(${postData.seoDescription ?? null}, seo_description),
         updated_at = ${now}
-      WHERE id = ${id}
+      WHERE id = ${id} OR slug = ${id}
       RETURNING *;
     `) as any[];
 
@@ -377,7 +363,7 @@ export async function updatePost(id: string, postData: Partial<Post>): Promise<P
 
     return updated;
   } else {
-    const idx = inMemoryPosts.findIndex((p) => p._id === id);
+    const idx = inMemoryPosts.findIndex((p) => p._id === id || p.slug.current === id);
     if (idx === -1) return null;
 
     if (postData.showAsPopup) {
@@ -404,10 +390,26 @@ export async function deletePost(id: string): Promise<boolean> {
   const sql = getDb();
   if (sql) {
     await ensureTable();
-    await sql`DELETE FROM blog_posts WHERE id = ${id};`;
-  } else {
-    inMemoryPosts = inMemoryPosts.filter((p) => p._id !== id);
+    await sql`DELETE FROM blog_posts WHERE id = ${id} OR slug = ${id};`;
   }
+  inMemoryPosts = inMemoryPosts.filter((p) => p._id !== id && p.slug?.current !== id);
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${id}`);
+  revalidatePath("/");
+  revalidatePath("/feed.xml");
+  revalidatePath("/sitemap.xml");
+
+  return true;
+}
+
+export async function deleteAllPosts(): Promise<boolean> {
+  const sql = getDb();
+  if (sql) {
+    await ensureTable();
+    await sql`DELETE FROM blog_posts;`;
+  }
+  inMemoryPosts = [];
 
   revalidatePath("/blog");
   revalidatePath("/");

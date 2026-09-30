@@ -5,6 +5,7 @@ export interface Post {
   category?: string;
   excerpt?: string;
   coverImage?: string;
+  coverImageFit?: "contain" | "cover" | "top";
   author?: {
     name: string;
     role?: string;

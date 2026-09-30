@@ -4,7 +4,7 @@ import { useMemo, type RefObject } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ExternalLink, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, FileEdit, X } from "lucide-react";
 import { formatDate, imageUrl, readingMinutes, type Post } from "./posts";
 import { DrawnLine } from "./drawn-line";
 import { ShareBar } from "./share-bar";
@@ -92,6 +92,15 @@ export function Reader({
 
           <div className="flex items-center gap-2">
             <Link
+              href={`/studio?edit=${slug}`}
+              title="Edit this story in Mikaelson Studio"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-black/10 px-3.5 text-xs font-bold text-[#003e45] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#e8f7f8] active:scale-[0.97] dark:border-white/15 dark:text-[#5ce1e6] dark:hover:bg-white/10"
+            >
+              <FileEdit size={14} aria-hidden="true" />
+              <span className="hidden sm:inline">Edit</span>
+            </Link>
+
+            <Link
               href={`/blog/${slug}`}
               title="Open full page article"
               className="inline-flex size-11 items-center justify-center rounded-full border border-black/10 text-[#003e45] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#e8f7f8] active:scale-[0.97] motion-reduce:active:scale-100 dark:border-white/15 dark:text-white/80 dark:hover:bg-white/10"
@@ -115,23 +124,36 @@ export function Reader({
 
       <article ref={refs.article} className="mx-auto max-w-[1120px] px-4 pt-6 pb-24 md:px-10 md:pt-10">
         {post.coverImage ? (
-          <div
-            ref={refs.image}
-            className="relative aspect-[4/3] origin-top-left overflow-hidden rounded-3xl bg-[#e8f7f8] sm:aspect-[16/9] lg:aspect-[21/9] dark:bg-white/5"
-          >
-            {underlaySrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={underlaySrc} alt="" aria-hidden="true" className="absolute inset-0 size-full object-cover" />
-            ) : null}
-            <Image
-              src={imageUrl(post.coverImage, 1800)}
-              alt={post.title}
-              fill
-              loading="eager"
-              sizes="(min-width: 1120px) 1040px, 100vw"
-              className="object-cover"
-            />
-          </div>
+          post.coverImageFit === "cover" || post.coverImageFit === "top" ? (
+            <div
+              ref={refs.image}
+              className="relative aspect-[4/3] origin-top-left overflow-hidden rounded-3xl bg-[#e8f7f8] sm:aspect-[16/9] lg:aspect-[21/9] dark:bg-white/5"
+            >
+              {underlaySrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={underlaySrc} alt="" aria-hidden="true" className="absolute inset-0 size-full object-cover" />
+              ) : null}
+              <Image
+                src={imageUrl(post.coverImage, 1800)}
+                alt={post.title}
+                fill
+                loading="eager"
+                sizes="(min-width: 1120px) 1040px, 100vw"
+                className={`object-cover ${post.coverImageFit === "top" ? "object-top" : "object-center"}`}
+              />
+            </div>
+          ) : (
+            <div
+              ref={refs.image}
+              className="relative flex items-center justify-center origin-top-left overflow-hidden rounded-3xl bg-[#0a1213]/5 p-2 sm:p-4 dark:bg-white/[0.03]"
+            >
+              <img
+                src={imageUrl(post.coverImage, 1800)}
+                alt={post.title}
+                className="max-h-[640px] w-auto max-w-full rounded-2xl object-contain shadow-sm"
+              />
+            </div>
+          )
         ) : null}
 
         <div className="mt-8 grid gap-8 md:mt-12 md:grid-cols-[180px_minmax(0,1fr)] md:gap-12 lg:grid-cols-[220px_minmax(0,1fr)]">

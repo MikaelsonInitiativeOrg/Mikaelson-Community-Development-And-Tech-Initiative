@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileEdit } from "lucide-react";
 import { getAllPosts, getAllPostSlugs, getPostBySlug } from "@/lib/blog";
 import {
   formatDate,
@@ -159,24 +159,45 @@ export default async function BlogPostPage({ params }: PageProps) {
               All stories
             </Link>
 
-            <span className="text-xs font-semibold text-[#666] dark:text-white/60">
-              {minutes} min read
-            </span>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/studio?edit=${slug}`}
+                title="Edit this story in Mikaelson Studio"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#003e45]/20 bg-[#e8f7f8]/70 px-3.5 text-xs font-bold text-[#003e45] transition-all hover:bg-[#003e45] hover:text-white active:scale-95 dark:border-[#5ce1e6]/30 dark:bg-white/5 dark:text-[#5ce1e6] dark:hover:bg-[#5ce1e6] dark:hover:text-black"
+              >
+                <FileEdit size={13} aria-hidden="true" />
+                <span>Edit Story</span>
+              </Link>
+
+              <span className="text-xs font-semibold text-[#666] dark:text-white/60">
+                {minutes} min read
+              </span>
+            </div>
           </div>
 
           <article>
             {/* Cover image */}
             {post.coverImage ? (
-              <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#e8f7f8] sm:aspect-[16/9] lg:aspect-[21/9] dark:bg-white/5">
-                <Image
-                  src={imageUrl(post.coverImage, 1800)}
-                  alt={post.title}
-                  fill
-                  priority
-                  sizes="(min-width: 1120px) 1040px, 100vw"
-                  className="object-cover"
-                />
-              </div>
+              post.coverImageFit === "cover" || post.coverImageFit === "top" ? (
+                <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#e8f7f8] sm:aspect-[16/9] lg:aspect-[21/9] dark:bg-white/5">
+                  <Image
+                    src={imageUrl(post.coverImage, 1800)}
+                    alt={post.title}
+                    fill
+                    priority
+                    sizes="(min-width: 1120px) 1040px, 100vw"
+                    className={`object-cover ${post.coverImageFit === "top" ? "object-top" : "object-center"}`}
+                  />
+                </div>
+              ) : (
+                <div className="relative flex items-center justify-center overflow-hidden rounded-3xl bg-[#0a1213]/5 p-2 sm:p-4 dark:bg-white/[0.03]">
+                  <img
+                    src={imageUrl(post.coverImage, 1800)}
+                    alt={post.title}
+                    className="max-h-[640px] w-auto max-w-full rounded-2xl object-contain shadow-sm"
+                  />
+                </div>
+              )
             ) : null}
 
             <div className="mt-8 grid gap-8 md:mt-12 md:grid-cols-[200px_minmax(0,1fr)] md:gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -299,13 +320,21 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </div>
               ) : null}
 
-              <div className="mt-10">
+              <div className="mt-10 flex flex-wrap items-center gap-3">
                 <Link
                   href="/blog"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#003e45]/25 px-6 text-sm font-semibold text-[#003e45] transition-colors hover:border-[#003e45] dark:border-white/25 dark:text-white dark:hover:border-white"
                 >
                   <ArrowLeft size={16} aria-hidden="true" />
                   Back to all stories
+                </Link>
+
+                <Link
+                  href={`/studio?edit=${slug}`}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#003e45] px-6 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#002b30] active:scale-95 dark:bg-[#5ce1e6] dark:text-[#050a0a] dark:hover:bg-[#4bcdd2]"
+                >
+                  <FileEdit size={16} aria-hidden="true" />
+                  Edit this Story in Studio
                 </Link>
               </div>
             </div>

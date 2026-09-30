@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPost, getAllPosts } from "@/lib/blog";
+import { createPost, deleteAllPosts, getAllPosts } from "@/lib/blog";
 
 function checkAuth(request: NextRequest): boolean {
   const token = request.cookies.get("studio_auth_token")?.value;
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       category: data.category?.trim() || "General",
       excerpt: data.excerpt?.trim() || "",
       coverImage: data.coverImage?.trim() || "/assets/images/community-1.png",
+      coverImageFit: data.coverImageFit || "contain",
       author: {
         name: data.author?.name?.trim() || "Mikaelson Initiative",
         role: data.author?.role?.trim() || "Contributor",
@@ -62,5 +63,19 @@ export async function POST(request: NextRequest) {
   } catch (err: any) {
     console.error("Studio create post error:", err);
     return NextResponse.json({ error: err.message || "Failed to create post" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await deleteAllPosts();
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error("Studio clear all posts error:", err);
+    return NextResponse.json({ error: err.message || "Failed to delete all posts" }, { status: 500 });
   }
 }

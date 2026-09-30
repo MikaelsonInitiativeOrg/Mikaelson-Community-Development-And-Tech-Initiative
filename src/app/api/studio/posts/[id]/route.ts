@@ -35,7 +35,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   try {
     const { id } = await params;
-    await deletePost(id);
+    const decodedId = decodeURIComponent(id);
+    await deletePost(decodedId);
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("Studio delete post error:", err);

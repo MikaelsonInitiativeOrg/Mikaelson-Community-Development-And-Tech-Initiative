@@ -106,7 +106,13 @@ export function BlogAnnouncementPopup({ post }: BlogPopupProps) {
                 alt=""
                 fill
                 sizes="80px"
-                className="object-cover"
+                className={
+                  post.coverImageFit === "top"
+                    ? "object-cover object-top"
+                    : post.coverImageFit === "contain"
+                    ? "object-contain p-1"
+                    : "object-cover"
+                }
               />
             </div>
           ) : null}

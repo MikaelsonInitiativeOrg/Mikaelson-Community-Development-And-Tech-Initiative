@@ -46,6 +46,13 @@ function OpenButton({ post, onOpen, onIntent }: CardProps) {
 }
 
 function Photo({ post, width, sizes, priority = false }: { post: Post; width: number; sizes: string; priority?: boolean }) {
+  const fitClass =
+    post.coverImageFit === "contain"
+      ? "object-contain p-1.5"
+      : post.coverImageFit === "top"
+      ? "object-cover object-top"
+      : "object-cover";
+
   return post.coverImage ? (
     <Image
       src={imageUrl(post.coverImage, width)}
@@ -53,7 +60,7 @@ function Photo({ post, width, sizes, priority = false }: { post: Post; width: nu
       fill
       priority={priority}
       sizes={sizes}
-      className="object-cover"
+      className={fitClass}
     />
   ) : (
     <div className="absolute inset-0 grid place-items-center">

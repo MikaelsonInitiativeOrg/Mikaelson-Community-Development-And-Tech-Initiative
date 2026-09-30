@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { DrawnLine } from "./drawn-line";
+import { Sparkles } from "lucide-react";
 
 interface ArticleBodyProps {
   body?: string | any;
@@ -23,6 +25,15 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
       {blocks.map((block, idx) => {
         const trimmed = block.trim();
         if (!trimmed) return null;
+
+        // Artistic Divider / Horizontal Rule (--- or *** or ___)
+        if (/^[-*_]{3,}$/.test(trimmed)) {
+          return (
+            <div key={idx} className="my-10 flex justify-start">
+              <DrawnLine variant="path" className="h-6 w-44 text-[#5ce1e6]" />
+            </div>
+          );
+        }
 
         // Heading 2 (## ...)
         if (trimmed.startsWith("## ")) {
@@ -60,13 +71,43 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
           );
         }
 
-        // Blockquote (> ...)
+        // Blockquote / Pullquote / Callout Box (> ...)
         if (trimmed.startsWith("> ")) {
-          const quoteText = trimmed
+          const rawLines = trimmed
             .split("\n")
-            .map((line) => line.replace(/^>\s*/, ""))
-            .join(" ");
+            .map((line) => line.replace(/^>\s*/, ""));
+          const quoteText = rawLines.join(" ");
 
+          // Callout card [!HIGHLIGHT], [!NOTE], [!TIP], etc.
+          const calloutMatch = quoteText.match(/^\[!(HIGHLIGHT|NOTE|KEY|TIP|INSIGHT)\]\s*(.*)/i);
+          if (calloutMatch) {
+            const label = calloutMatch[1].toUpperCase();
+            const content = calloutMatch[2];
+            return (
+              <div
+                key={idx}
+                className="my-10 rounded-2xl border border-[#5ce1e6]/40 bg-[#eefcfc] p-6 text-[#003e45] shadow-sm dark:border-[#5ce1e6]/30 dark:bg-white/[0.04] dark:text-white"
+              >
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0097a7] dark:text-[#5ce1e6]">
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  <span>
+                    {label === "HIGHLIGHT"
+                      ? "Key Highlight"
+                      : label === "NOTE"
+                      ? "Editorial Note"
+                      : label === "TIP"
+                      ? "Leadership Tip"
+                      : "Key Insight"}
+                  </span>
+                </div>
+                <div className="mt-2.5 text-[1.125rem] leading-relaxed font-medium">
+                  {parseInlineMarkdown(content)}
+                </div>
+              </div>
+            );
+          }
+
+          // Signature Cyan Pull Quote (matches Mikaelson editorial aesthetic)
           return (
             <blockquote
               key={idx}
@@ -83,12 +124,19 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
           const alt = imgMatch[1] || "";
           const src = imgMatch[2];
           return (
-            <figure key={idx} className="my-10">
-              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-[#e8f7f8] dark:bg-white/5">
-                <Image src={src} alt={alt} fill sizes="(min-width: 768px) 680px, 100vw" className="object-cover" />
+            <figure key={idx} className="my-10 overflow-hidden rounded-2xl border border-black/5 bg-[#0a1213]/5 dark:border-white/5 dark:bg-white/[0.03]">
+              <div className="flex items-center justify-center p-2 sm:p-4">
+                <img
+                  src={src}
+                  alt={alt}
+                  loading="lazy"
+                  className="max-h-[640px] w-auto max-w-full rounded-xl object-contain shadow-sm"
+                />
               </div>
               {alt ? (
-                <figcaption className="mt-3 text-center text-sm text-[#666] dark:text-white/60">{alt}</figcaption>
+                <figcaption className="border-t border-black/5 px-4 py-2.5 text-center text-xs text-[#666] dark:border-white/5 dark:text-white/60">
+                  {alt}
+                </figcaption>
               ) : null}
             </figure>
           );
@@ -151,12 +199,15 @@ function parseInlineMarkdown(text: string): React.ReactNode {
     const boldMatch = remaining.match(/\*\*(.*?)\*\*/);
     // Check for italic *text*
     const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/);
+    // Check for highlight ==text==
+    const highlightMatch = remaining.match(/==(.*?)==/);
 
     // Find the earliest match
     const matches = [
       linkMatch ? { type: "link", match: linkMatch, index: linkMatch.index! } : null,
       boldMatch ? { type: "bold", match: boldMatch, index: boldMatch.index! } : null,
       italicMatch ? { type: "italic", match: italicMatch, index: italicMatch.index! } : null,
+      highlightMatch ? { type: "highlight", match: highlightMatch, index: highlightMatch.index! } : null,
     ].filter(Boolean) as { type: string; match: RegExpMatchArray; index: number }[];
 
     if (matches.length === 0) {
@@ -198,6 +249,15 @@ function parseInlineMarkdown(text: string): React.ReactNode {
         <em key={key++} className="italic">
           {earliest.match[1]}
         </em>,
+      );
+    } else if (earliest.type === "highlight") {
+      parts.push(
+        <mark
+          key={key++}
+          className="rounded-md bg-[#5ce1e6]/25 px-1.5 py-0.5 font-semibold text-[#003e45] dark:bg-[#5ce1e6]/20 dark:text-[#5ce1e6]"
+        >
+          {earliest.match[1]}
+        </mark>,
       );
     }
 
