@@ -1,4 +1,6 @@
 import { MetadataRoute } from "next";
+import { client } from "@/sanity/lib/client";
+import { allPostSlugsQuery } from "@/features/website/pages/blog/posts";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
 
@@ -20,7 +22,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/help`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
   ];
 
-  // Blog posts have no pages of their own (they're read on /blog), so
-  // only the static pages are listed.
-  return staticPages;
+  let postPages: MetadataRoute.Sitemap = [];
+  try {
+    const posts = await client.fetch<{ slug: string; publishedAt?: string; _updatedAt?: string }[]>(allPostSlugsQuery);
+    postPages = posts.map((p) => ({
+      url: `${siteUrl}/blog/${p.slug}`,
+      lastModified: new Date(p._updatedAt || p.publishedAt || Date.now()),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
+  } catch {
+    postPages = [];
+  }
+
+  return [...staticPages, ...postPages];
 }

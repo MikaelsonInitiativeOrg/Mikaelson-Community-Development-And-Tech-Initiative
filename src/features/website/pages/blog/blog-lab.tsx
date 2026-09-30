@@ -484,6 +484,14 @@ export function BlogLab({ posts }: { posts: Post[] }) {
               Stories written to help students think bigger, grow with intention and take meaningful action, and
               for the parents, teachers and mentors walking beside them.
             </p>
+            <div className="mt-5">
+              <Link
+                href="/studio"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003e45]/70 underline decoration-[#5ce1e6] underline-offset-4 transition-colors hover:text-[#003e45] dark:text-white/50 dark:hover:text-white"
+              >
+                <span>Team member? Open Writer Studio &rarr;</span>
+              </Link>
+            </div>
           </div>
           <figure className="md:col-span-5">
             <div className="relative aspect-[4/5] -rotate-[1.5deg] overflow-hidden rounded-3xl bg-[#e8f7f8] shadow-[0_24px_48px_-24px_rgba(0,62,69,0.35)] motion-reduce:rotate-0 dark:bg-white/5">

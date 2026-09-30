@@ -90,13 +90,12 @@ export default async function BlogPage() {
                 url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
               },
             },
-            // Posts open in place, so there are no per-post URLs.
             blogPost: posts.map((post) => ({
               "@type": "BlogPosting",
               headline: post.title,
               description: post.excerpt,
               datePublished: post.publishedAt,
-              url: "https://mikaelsoninitiative.org/blog",
+              url: `https://mikaelsoninitiative.org/blog/${post.slug.current}`,
             })),
           }),
         }}

@@ -2,15 +2,63 @@ import { defineQuery } from "next-sanity";
 import { urlFor } from "@/sanity/lib/image";
 
 /**
- * The index query plus each post's body. The posts are short (about 1,600
- * characters of text each, three posts), so fetching the bodies with the
- * list is lighter than a second round trip when a reader opens. If the blog
- * grows to dozens of long posts, fetch the body on open instead
- * (`postBySlugQuery` in src/sanity/lib/queries.ts).
+ * The index query plus each post's body. The posts are fetched
+ * along with author, categorization, and metadata for rich display.
  */
 export const postsWithBodyQuery = defineQuery(
   `*[_type == "post"] | order(publishedAt desc) {
-    _id, title, slug, category, excerpt, publishedAt, coverImage, body
+    _id,
+    title,
+    slug,
+    category,
+    excerpt,
+    publishedAt,
+    _updatedAt,
+    coverImage,
+    body,
+    author,
+    showAsPopup,
+    seoTitle,
+    seoDescription
+  }`,
+);
+
+export const postBySlugQuery = defineQuery(
+  `*[_type == "post" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    category,
+    excerpt,
+    publishedAt,
+    _updatedAt,
+    coverImage,
+    body,
+    author,
+    showAsPopup,
+    seoTitle,
+    seoDescription
+  }`,
+);
+
+export const popupPostQuery = defineQuery(
+  `*[_type == "post" && defined(slug.current)] | order(showAsPopup desc, publishedAt desc)[0] {
+    _id,
+    title,
+    slug,
+    category,
+    excerpt,
+    publishedAt,
+    coverImage,
+    showAsPopup
+  }`,
+);
+
+export const allPostSlugsQuery = defineQuery(
+  `*[_type == "post" && defined(slug.current)] {
+    "slug": slug.current,
+    publishedAt,
+    _updatedAt
   }`,
 );
 
@@ -25,6 +73,12 @@ export type PortableBlock = {
   [key: string]: unknown;
 };
 
+export interface Author {
+  name: string;
+  role?: string;
+  avatar?: any;
+}
+
 export interface Post {
   _id: string;
   title: string;
@@ -32,8 +86,13 @@ export interface Post {
   category?: string;
   excerpt?: string;
   publishedAt?: string;
+  _updatedAt?: string;
   coverImage?: any;
   body?: PortableBlock[];
+  author?: Author;
+  showAsPopup?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export function formatDate(dateStr?: string, month: "short" | "long" = "short") {
@@ -130,10 +189,14 @@ export function normalizeBody(body?: PortableBlock[]): PortableBlock[] {
 }
 
 /**
- * A Sanity image URL at a width, as WebP. The covers include a 1.4MB PNG
- * that the Next image optimizer times out on at larger widths; asking
- * Sanity for WebP keeps the source small.
+ * A Sanity image URL at a width, as WebP. Safe fallback to default
+ * placeholder if asset is missing.
  */
-export function imageUrl(source: any, width: number) {
-  return urlFor(source).width(width).format("webp").url();
+export function imageUrl(source: any, width: number = 1200) {
+  if (!source) return "/assets/images/og-blog.png";
+  try {
+    return urlFor(source).width(width).format("webp").url();
+  } catch {
+    return "/assets/images/og-blog.png";
+  }
 }

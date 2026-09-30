@@ -34,8 +34,8 @@ const query = `*[_type == "post" && defined(slug.current)] | order(publishedAt d
   _id, title, slug, category, excerpt, publishedAt
 }`;
 
-// Stories open in place on the blog test page.
-const storyHref = (post: Post) => `/blog?post=${encodeURIComponent(post.slug.current)}`;
+// Stories link directly to their dedicated article pages.
+const storyHref = (post: Post) => `/blog/${encodeURIComponent(post.slug.current)}`;
 
 function formatDate(date?: string) {
   if (!date) return null;

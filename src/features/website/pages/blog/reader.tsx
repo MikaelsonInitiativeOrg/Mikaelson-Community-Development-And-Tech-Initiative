@@ -4,9 +4,10 @@ import { useMemo, type RefObject } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, X } from "lucide-react";
 import { formatDate, imageUrl, normalizeBody, readingMinutes, type Post } from "./posts";
 import { DrawnLine } from "./drawn-line";
+import { ShareBar } from "./share-bar";
 import styles from "./blog.module.css";
 
 function BodyLoading() {
@@ -73,7 +74,7 @@ export function Reader({
       {/* Top bar */}
       <div
         data-reader-fade
-        className="sticky top-0 z-10 border-b border-black/10 bg-white dark:border-white/10 dark:bg-[#050a0a]"
+        className="sticky top-0 z-10 border-b border-black/10 bg-white/95 backdrop-blur-md dark:border-white/10 dark:bg-[#050a0a]/95"
       >
         <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between gap-4 px-4 md:px-10">
           <button
@@ -84,18 +85,30 @@ export function Reader({
             <ArrowLeft size={16} aria-hidden="true" />
             All stories
           </button>
+
           <p className="hidden min-w-0 truncate text-sm font-semibold text-[#111] sm:block dark:text-white">
             {post.title}
           </p>
-          <button
-            ref={refs.close}
-            type="button"
-            onClick={onClose}
-            aria-label="Close story"
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#003e45] text-white transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5ce1e6] active:scale-[0.97] motion-reduce:active:scale-100 dark:bg-[#5ce1e6] dark:text-black"
-          >
-            <X size={18} aria-hidden="true" />
-          </button>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/blog/${slug}`}
+              title="Open full page article"
+              className="inline-flex size-11 items-center justify-center rounded-full border border-black/10 text-[#003e45] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#e8f7f8] active:scale-[0.97] motion-reduce:active:scale-100 dark:border-white/15 dark:text-white/80 dark:hover:bg-white/10"
+            >
+              <ExternalLink size={16} aria-hidden="true" />
+            </Link>
+
+            <button
+              ref={refs.close}
+              type="button"
+              onClick={onClose}
+              aria-label="Close story"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#003e45] text-white transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5ce1e6] active:scale-[0.97] motion-reduce:active:scale-100 dark:bg-[#5ce1e6] dark:text-black"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <div aria-hidden="true" className={`${styles.progress} absolute inset-x-0 -bottom-px h-[3px] bg-[#5ce1e6]`} />
       </div>
@@ -106,8 +119,6 @@ export function Reader({
             ref={refs.image}
             className="relative aspect-[4/3] origin-top-left overflow-hidden rounded-3xl bg-[#e8f7f8] sm:aspect-[16/9] lg:aspect-[21/9] dark:bg-white/5"
           >
-            {/* The card's already-loaded image sits underneath, so the
-                growing image is never blank while the larger one loads. */}
             {underlaySrc ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={underlaySrc} alt="" aria-hidden="true" className="absolute inset-0 size-full object-cover" />
@@ -136,6 +147,19 @@ export function Reader({
                   </dd>
                 </div>
               ) : null}
+
+              {post.author?.name ? (
+                <div>
+                  <dt className="text-[13px] font-semibold text-[#555] dark:text-white/60">Written by</dt>
+                  <dd className="mt-1.5">
+                    <p className="font-semibold text-[#111] dark:text-white">{post.author.name}</p>
+                    {post.author.role ? (
+                      <p className="text-xs text-[#666] dark:text-white/50">{post.author.role}</p>
+                    ) : null}
+                  </dd>
+                </div>
+              ) : null}
+
               {post.publishedAt ? (
                 <div>
                   <dt className="text-[13px] font-semibold text-[#555] dark:text-white/60">Published</dt>
@@ -144,6 +168,7 @@ export function Reader({
                   </dd>
                 </div>
               ) : null}
+
               <div>
                 <dt className="text-[13px] font-semibold text-[#555] dark:text-white/60">Reading time</dt>
                 <dd className="mt-1.5 font-medium text-[#111] dark:text-white">{minutes} min</dd>
@@ -172,6 +197,11 @@ export function Reader({
               ) : (
                 <p className="text-base text-[#555] dark:text-white/60">This story has no text yet.</p>
               )}
+
+              {/* Share Bar */}
+              <div className="mt-12 border-y border-black/10 py-6 dark:border-white/10">
+                <ShareBar title={post.title} slug={slug} excerpt={post.excerpt} />
+              </div>
             </div>
           </div>
         </div>

@@ -4,6 +4,9 @@ import { ScrollLine } from "@/components/site/scroll-line";
 import OurEcosystemTabs from "@/features/website/pages/home/ecosystem-tabs";
 import { Closing, Hero, WalkWithUs, WhoWeServe } from "@/features/website/pages/home/sections";
 import { BlogPreview } from "@/features/website/pages/home/blog-preview";
+import { client } from "@/sanity/lib/client";
+import { popupPostQuery, type Post } from "@/features/website/pages/blog/posts";
+import { BlogAnnouncementPopup } from "@/features/website/pages/home/blog-popup";
 
 export const metadata: Metadata = {
   // absolute: skip the "%s | Mikaelson Initiative" template (the name is already in it)
@@ -65,7 +68,14 @@ export const metadata: Metadata = {
 
 // No images on this page. The turquoise line drops down the page as you
 // scroll (ScrollLine), looping beside each heading marked data-stop.
-export default function HomePage() {
+export default async function HomePage() {
+  let popupPost: Post | null = null;
+  try {
+    popupPost = await client.fetch<Post | null>(popupPostQuery, {}, { next: { revalidate: 60 } });
+  } catch {
+    popupPost = null;
+  }
+
   return (
     <>
       <script
@@ -109,6 +119,7 @@ export default function HomePage() {
         </Suspense>
         <Closing />
       </ScrollLine>
+      <BlogAnnouncementPopup post={popupPost} />
     </>
   );
 }

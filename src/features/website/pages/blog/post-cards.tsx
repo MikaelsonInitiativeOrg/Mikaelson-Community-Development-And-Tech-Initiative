@@ -24,6 +24,7 @@ function Meta({ post }: { post: Post }) {
           {post.category}
         </span>
       ) : null}
+      {post.author?.name ? <span>by {post.author.name}</span> : null}
       {post.publishedAt ? <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, "long")}</time> : null}
       <span>{readingMinutes(post.body)} min read</span>
     </div>
