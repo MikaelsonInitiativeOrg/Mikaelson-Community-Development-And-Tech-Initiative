@@ -15,23 +15,16 @@ import { ShareBar } from "@/features/website/pages/blog/share-bar";
 import { DrawnLine } from "@/features/website/pages/blog/drawn-line";
 
 export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  try {
-    const posts = await getAllPostSlugs();
-    return posts.map((p) => ({ slug: p.slug }));
-  } catch {
-    return [];
-  }
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug || "").trim();
   let post: Post | null = null;
   try {
     post = await getPostBySlug(slug);
@@ -89,7 +82,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug || "").trim();
 
   let post: Post | null = null;
   let allPosts: Post[] = [];

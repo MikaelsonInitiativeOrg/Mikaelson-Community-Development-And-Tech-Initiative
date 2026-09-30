@@ -205,23 +205,50 @@ export async function getAllPosts(includeDrafts = false): Promise<Post[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const cleanSlug = decodeURIComponent(slug || "").trim();
+  const lowerSlug = cleanSlug.toLowerCase();
+
   const sql = getDb();
   if (!sql) {
-    return inMemoryPosts.find((p) => p.slug.current === slug) || null;
+    return (
+      inMemoryPosts.find(
+        (p) =>
+          p.slug.current.toLowerCase() === lowerSlug ||
+          p.slug.current === cleanSlug ||
+          p.slug.current === slug ||
+          p._id === cleanSlug ||
+          p._id === slug
+      ) || null
+    );
   }
 
   await ensureTable();
 
   try {
     const rows = (await sql`
-      SELECT * FROM blog_posts WHERE slug = ${slug} LIMIT 1;
+      SELECT * FROM blog_posts 
+      WHERE LOWER(slug) = ${lowerSlug} 
+         OR slug = ${cleanSlug} 
+         OR slug = ${slug}
+         OR id = ${cleanSlug}
+         OR id = ${slug}
+      LIMIT 1;
     `) as any[];
 
     if (!rows || rows.length === 0) return null;
     return rowToPost(rows[0]);
   } catch (err) {
     console.error("Error fetching post by slug:", err);
-    return inMemoryPosts.find((p) => p.slug.current === slug) || null;
+    return (
+      inMemoryPosts.find(
+        (p) =>
+          p.slug.current.toLowerCase() === lowerSlug ||
+          p.slug.current === cleanSlug ||
+          p.slug.current === slug ||
+          p._id === cleanSlug ||
+          p._id === slug
+      ) || null
+    );
   }
 }
 
