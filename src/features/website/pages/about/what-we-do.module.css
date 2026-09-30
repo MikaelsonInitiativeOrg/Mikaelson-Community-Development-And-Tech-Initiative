@@ -1,0 +1,49 @@
+/* What We Do ecosystem cards circled sequentially by ScrollLine */
+.card {
+  position: relative;
+  transition:
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 300ms ease,
+    box-shadow 400ms ease;
+}
+
+/* While the scroll line is active and hasn't reached this card yet:
+   card stays in a calm, readable waiting state */
+:global([data-line-ready]) .card:not([data-reached]) {
+  opacity: 0.85;
+}
+
+/* When the scroll line loops around this card:
+   settles firmly in place with full clarity */
+:global([data-line-ready]) .card[data-reached] {
+  opacity: 1;
+}
+
+/* When the scroll line is actively circling this specific card:
+   comes forward with the signature turquoise accent border and glowing depth */
+:global([data-line-ready]) .card[data-current] {
+  border-color: #5ce1e6 !important;
+  box-shadow:
+    0 20px 40px -12px rgba(0, 62, 69, 0.18),
+    0 0 0 2px rgba(92, 225, 230, 0.35);
+}
+
+:global([data-line-ready]) .card[data-current] .cardBadge {
+  background-color: #5ce1e6 !important;
+  color: #003e45 !important;
+}
+
+/* Hover reveal: allows visitors to highlight any card immediately */
+.card:hover {
+  border-color: #5ce1e6;
+  box-shadow: 0 16px 36px -10px rgba(0, 62, 69, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  :global([data-line-ready]) .card:not([data-reached]),
+  :global([data-line-ready]) .card[data-reached] {
+    transition: none;
+    opacity: 1;
+  }
+}

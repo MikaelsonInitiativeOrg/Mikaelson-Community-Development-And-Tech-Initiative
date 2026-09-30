@@ -24,27 +24,82 @@ export const STORY = [
   "What began as one person's journey to overcome procrastination and build a focused, structured life has grown into a movement reaching thousands of students across multiple universities. Today, the Mikaelson Initiative stands for hope, possibility and action: changing not just individuals, but building a better Africa, one student at a time.",
 ];
 
-// The four parts of the ecosystem, described as the home page's tabs do.
-export const PARTS = [
+export type EcosystemPart = {
+  id: string;
+  name: string;
+  badge: string;
+  text: string;
+  problem: string;
+  solution: string;
+  highlights: string[];
+  cta: { label: string; href: string; external?: boolean };
+};
+
+// The four parts of the ecosystem, detailing the structural problems we solve.
+export const PARTS: EcosystemPart[] = [
   {
+    id: "school-club",
     name: "Mikaelson School Club",
-    text: "Brings the Initiative's values directly into schools, helping students build structured growth systems, lead peer communities, and champion discipline where they already learn.",
-    cta: { label: "Start a club", href: "https://club.mikaelsoninitiative.org", external: true },
+    badge: "Secondary Schools & Universities",
+    text: "Brings intentional habit systems, student leadership, and peer accountability directly into schools where young Africans learn every day.",
+    problem:
+      "Across Africa, students face severe procrastination, academic drift, and a complete absence of structured personal development. Traditional education emphasizes exam memorization, leaving young people without daily discipline habits, emotional resilience, or peer accountability to build purposeful lives.",
+    solution:
+      "We establish student-led Mikaelson School Clubs directly within secondary schools and universities. Through structured weekly sessions, habit-building frameworks, leadership curriculums, and peer circles, we build personal discipline and character where students already spend their days.",
+    highlights: [
+      "Student-led weekly sessions on habit building & time mastery",
+      "Peer accountability circles that keep students from drifting",
+      "Campus-wide cultural shift from passive learning to proactive leadership",
+    ],
+    cta: { label: "Start a School Club", href: "https://club.mikaelsoninitiative.org", external: true },
   },
   {
-    name: "Mikaelson Labs",
-    text: "Our innovation hub, where bold ideas are nurtured and turned into real-world solutions that drive sustainable progress.",
-    cta: { label: "Explore the Labs", href: "/labs", external: false },
-  },
-  {
-    name: "Partnership & Growth Network",
-    text: "Connects students and emerging leaders with mentors, organisations, resources and opportunities, so collaboration grows and impact scales.",
-    cta: { label: "Partner with us", href: "/contact", external: false },
-  },
-  {
-    name: "Mikaelson Institute",
-    text: "The Mikaelson Institute for African Studies, our pan-African research institute, publishing scholarship across history and decolonisation, society and politics, arts and culture, and religion and philosophy.",
+    id: "institute",
+    name: "Mikaelson Institute for African Studies",
+    badge: "Pan-African Research & Scholarship",
+    text: "Our pan-African research institute publishing original scholarship to reclaim African intellectual thought and shape continental policy.",
+    problem:
+      "African history, intellectual systems, and public policy have long been dominated by foreign paradigms and external institutions. Young African scholars and students lack accessible, credible platforms to publish rigorous research, interrogate colonial legacies, and develop indigenous solutions for continental governance.",
+    solution:
+      "A dedicated academic research institute producing peer-reviewed scholarship across four foundational areas: History & Decolonization, Society & Politics, Arts & Culture, and Religion & Philosophy. Through our Call for Papers, Ubuntu Fellowship, and research library, we empower young Africans to lead continental discourse from within.",
+    highlights: [
+      "Peer-reviewed scholarship across 4 key African disciplines",
+      "Open Call for Papers for emerging students and African researchers",
+      "The Ubuntu Program and a growing open-access African library",
+    ],
     cta: { label: "Visit the Institute", href: "https://institute.mikaelsoninitiative.org", external: true },
+  },
+  {
+    id: "labs",
+    name: "Mikaelson Labs",
+    badge: "Innovation Hub & Applied Tech",
+    text: "Our experimental engineering space where bold ideas turn into production-grade software addressing authentic African socioeconomic challenges.",
+    problem:
+      "A massive divide separates theoretical classroom learning from practical technological execution. Talented young Africans frequently lack engineering labs, technical mentorship, and product incubation environments to transform their ideas into functional software that solves real African problems.",
+    solution:
+      "An experimental engineering environment where students transition from passive learners into builders. Teams collaborate on practical, real-world software—including RIO AI (intelligent habit tracking and accountability) and Rental Hub (verified, transparent housing access for Nigerian cities).",
+    highlights: [
+      "Hands-on software development, UI/UX design, and AI tooling",
+      "Incubating homegrown solutions like RIO AI & Rental Hub",
+      "Bridging the skills gap for high-impact African tech careers",
+    ],
+    cta: { label: "Explore Mikaelson Labs", href: "/labs", external: false },
+  },
+  {
+    id: "network",
+    name: "Partnership & Growth Network",
+    badge: "Mentorship & Institutional Alliances",
+    text: "Connects emerging changemakers with mentors, corporate partners, and academic institutions so individual growth scales into community-wide progress.",
+    problem:
+      "Isolated ambition and systemic opportunity ceilings. Ambitious young Africans with remarkable potential frequently stall because they lack direct access to seasoned industry leaders, institutional networks, funding pathways, and collaborative ecosystems necessary to scale their impact.",
+    solution:
+      "We forge strategic alliances between students, academic institutions, corporate partners, and civic organizations. By pairing students with dedicated mentors, sponsorships, and real-world opportunities, we turn individual growth into collective progress across African communities.",
+    highlights: [
+      "Mentorship pairing with seasoned professionals and leaders",
+      "Institutional partnerships connecting schools and corporate allies",
+      "Sponsorship and funding pathways that back promising youth",
+    ],
+    cta: { label: "Partner with Us", href: "/contact", external: false },
   },
 ];
 

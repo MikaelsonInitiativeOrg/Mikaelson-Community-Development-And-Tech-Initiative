@@ -1,10 +1,13 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Info } from "lucide-react";
 import { Reveal } from "@/components/site/motion/reveal";
 import { StaggerGroup, StaggerItem } from "@/components/site/motion/stagger";
 import { DrawnUnderline } from "@/features/website/pages/team/warm";
+import circle from "@/components/site/circle.module.css";
 import { PARTS, PROMISES, STORY } from "./content";
 import { body, btn, h2, textLink, wrap } from "./styles";
+import styles from "./what-we-do.module.css";
 
 /** Centred, no photos: who we are, in one warm sentence. */
 export function AboutHero() {
@@ -110,46 +113,97 @@ export function OurStory() {
   );
 }
 
-/** What we do: the four parts of the ecosystem, in plain words. */
+/** What we do: the four parts of the ecosystem, detailing the problems we solve and circled by the scroll line. */
 export function WhatWeDo() {
   return (
     <section aria-labelledby="do-heading" className="border-t border-[#003E45]/10 dark:border-white/10">
       <div className={`${wrap} py-24 md:py-32`}>
         <Reveal>
-          <h2 id="do-heading" className={h2}>
+          <p className="text-[13px] font-semibold text-[#0b6b75] dark:text-[#5CE1E6]">
+            The problems we solve & our ecosystem
+          </p>
+          <h2 id="do-heading" className={`mt-2 ${h2}`}>
             What we do
           </h2>
-          <p className={`mt-5 max-w-[62ch] ${body}`}>
-            We create vibrant networks of ambitious students and changemakers united by excellence and intentional
-            growth, and we run growth campaigns and programmes that help students develop discipline, leadership and
-            life skills. It happens through four parts of one ecosystem.
+          <p className={`mt-5 max-w-[64ch] ${body}`}>
+            We tackle the structural challenges holding young Africans back—from academic drift and the lack of habit
+            systems in secondary schools and universities, to the absence of authentic African research and scholarship.
+            Here is what we are solving across four integrated pillars of one ecosystem.
           </p>
         </Reveal>
-        <StaggerGroup onViewport className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:gap-8">
           {PARTS.map((part, i) => (
-            <StaggerItem key={part.name} className="h-full">
-              <article className="flex h-full flex-col rounded-2xl border border-[#003E45]/12 p-6 sm:p-8 dark:border-white/10">
-                <p className="text-[13px] font-semibold text-[#0b6b75] dark:text-[#5CE1E6]">Part {i + 1} of 4</p>
-                <h3 className="mt-2 text-[21px] font-semibold text-[#111] md:text-[23px] dark:text-white">{part.name}</h3>
-                <p className="mt-3 grow text-base leading-[1.7] text-[#555] dark:text-white/65">{part.text}</p>
-                <div className="mt-5">
-                  {part.cta.external ? (
-                    <a href={part.cta.href} target="_blank" rel="noopener noreferrer" className={textLink}>
-                      {part.cta.label}
-                      <ArrowUpRight className="size-4" aria-hidden="true" />
-                      <span className="sr-only">(opens in a new tab)</span>
-                    </a>
-                  ) : (
-                    <Link href={part.cta.href} className={textLink}>
-                      {part.cta.label}
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                    </Link>
-                  )}
-                </div>
-              </article>
-            </StaggerItem>
+            <article
+              key={part.id}
+              data-circle
+              className={`${circle.item} ${styles.card} flex h-full flex-col rounded-2xl border border-[#003E45]/12 bg-white p-6 shadow-sm transition-[border-color,box-shadow] sm:p-8 dark:border-white/10 dark:bg-[#0E1819]`}
+              style={{ "--lift": 1.025 } as CSSProperties}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[13px] font-bold tracking-wider text-[#0b6b75] uppercase dark:text-[#5CE1E6]">
+                  Part 0{i + 1} of 04
+                </span>
+                <span
+                  className={`${styles.cardBadge} rounded-full bg-[#EEFCFC] px-3 py-1 text-[12px] font-semibold text-[#003E45] transition-colors dark:bg-white/10 dark:text-[#5CE1E6]`}
+                >
+                  {part.badge}
+                </span>
+              </div>
+
+              <h3 className="mt-4 text-[22px] font-bold tracking-tight text-[#111] md:text-[24px] dark:text-white">
+                {part.name}
+              </h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#555] dark:text-white/70">
+                {part.text}
+              </p>
+
+              <div className="mt-5 rounded-xl border border-[#003E45]/10 bg-[#003E45]/[0.03] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="text-[12px] font-bold tracking-wider text-[#003E45] uppercase dark:text-[#5CE1E6]">
+                  The Problem We Solve
+                </p>
+                <p className="mt-1.5 text-[14px] leading-[1.65] text-[#444] dark:text-white/80">
+                  {part.problem}
+                </p>
+              </div>
+
+              <div className="mt-3.5 rounded-xl border border-[#0097A7]/20 bg-[#EEFCFC]/70 p-4 dark:border-[#5CE1E6]/20 dark:bg-[#5CE1E6]/[0.05]">
+                <p className="text-[12px] font-bold tracking-wider text-[#0b6b75] uppercase dark:text-[#5CE1E6]">
+                  How We Solve It
+                </p>
+                <p className="mt-1.5 text-[14px] leading-[1.65] text-[#333] dark:text-white/85">
+                  {part.solution}
+                </p>
+              </div>
+
+              <ul className="mt-5 grow space-y-2">
+                {part.highlights.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2.5 text-[13.5px] leading-relaxed text-[#555] dark:text-white/75"
+                  >
+                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[#0097A7] dark:bg-[#5CE1E6]" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6 border-t border-[#003E45]/10 pt-4 dark:border-white/10">
+                {part.cta.external ? (
+                  <a href={part.cta.href} target="_blank" rel="noopener noreferrer" className={textLink}>
+                    {part.cta.label}
+                    <ArrowUpRight className="size-4" aria-hidden="true" />
+                    <span className="sr-only">(opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <Link href={part.cta.href} className={textLink}>
+                    {part.cta.label}
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+            </article>
           ))}
-        </StaggerGroup>
+        </div>
       </div>
     </section>
   );
