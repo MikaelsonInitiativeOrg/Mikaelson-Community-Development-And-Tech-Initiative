@@ -158,25 +158,16 @@ Partnership & Growth Network.
 
 ## Forms and payments
 
-The site has no form backend, so nothing pretends to send:
+Transactional emails are dispatched via the [Resend](https://resend.com) REST API (`src/lib/email.ts`):
 
-- **Contact** opens the visitor's email app with their message written
-  out, addressed to `partnership@mikaelsoninitiative.org`. To send from the
-  page, add an API route and call it in `ContactForm`'s `onSubmit`
-  (`src/features/website/pages/contact/contact-form.tsx`).
-- **Volunteer** applications go through the Initiative's Google Form.
+- **Contact** (`/contact`): posts to `/api/contact`, which dispatches an alert email to the team (`partnership@mikaelsoninitiative.org`) and sends an automated receipt confirmation back to the visitor. If sending fails or offline, provides an email client fallback.
 - **Sponsor**:
-  - **Individuals** give by bank transfer to First Bank or GTBank (accounts
-    in `src/features/website/pages/sponsor/data.ts`).
-  - **Organisations** pay online with Paystack. The popup posts to
-    `/api/paystack/initialize`, which starts the transaction on the server
-    with `PAYSTACK_SECRET_KEY` and returns Paystack's checkout URL. After
-    paying, Paystack sends them to `/sponsor/thank-you`, which verifies the
-    payment with Paystack before thanking them. If the key isn't set, the
-    popup offers the Paystack payment page instead.
-  - The secret key lives only in the hosting environment, never in the repo
-    or the browser. Locally, add it to `.env.local` to test with a
-    `sk_test_…` key.
+  - **Individuals** give by bank transfer to First Bank or GTBank. Donors can submit their transfer notice directly in-app, which notifies the finance team and sends an immediate receipt confirmation to the donor (`/api/sponsor/transfer-notice`).
+  - **Organisations** pay online with Paystack (`/api/paystack/initialize`). When Paystack verifies the transaction on `/sponsor/thank-you` (or via `/api/paystack/webhook`), an official donation receipt is automatically emailed to the organization, and a sponsorship alert is dispatched to the team.
+- **Code of Conduct** (`/code-of-conduct`): offers an in-app confidential report form posting to `/api/conduct/report`, dispatching secure alerts to `conduct@mikaelsoninitiative.org` and an optional acknowledgment receipt to the reporter.
+- **Volunteer** applications continue through the Initiative's official Google Form.
+
+Set `RESEND_API_KEY` in `.env.local` or your production hosting environment. In development, if omitted, emails are simulated and logged to the server console.
 
 ## Contributing
 

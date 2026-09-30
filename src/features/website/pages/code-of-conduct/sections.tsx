@@ -14,6 +14,7 @@ import { Reveal } from "@/components/site/motion/reveal";
 import { StaggerGroup, StaggerItem } from "@/components/site/motion/stagger";
 import circle from "@/components/site/circle.module.css";
 import { btn } from "@/features/website/pages/volunteer/styles";
+import { ConductReportForm } from "./report-form";
 import {
   ATTRIBUTION,
   CHANNELS,
@@ -311,17 +312,7 @@ export function ReportConcern() {
             If you experience or witness behavior that violates this Code of Conduct, please report it immediately.
             All community members are encouraged to report violations, even if they are not directly affected.
           </p>
-          <a href={REPORT_MAILTO} className={`${btn.primary} mt-9 max-w-full`}>
-            <Mail className="size-4 shrink-0" aria-hidden="true" />
-            Email the Code of Conduct team
-          </a>
-          <p className="mt-4 max-w-[46ch] text-[14px] leading-[1.6] text-white/70">
-            This opens your own email app with a message to{" "}
-            <a href={`mailto:${CONDUCT_EMAIL}`} className={`${bandLink} break-words`}>
-              {CONDUCT_EMAIL}
-            </a>
-            , ready for you to fill in. Nothing is sent until you send it.
-          </p>
+          <ConductReportForm />
 
           <div className="mt-10 rounded-2xl bg-white/8 p-6 ring-1 ring-white/15">
             <h3 className="text-[17px] font-semibold text-[#5CE1E6]">Confidentiality and support</h3>

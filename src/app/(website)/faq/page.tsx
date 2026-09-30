@@ -7,7 +7,7 @@ import { FaqList } from "@/features/website/pages/faq/faq-list";
 import { btn } from "@/features/website/pages/volunteer/styles";
 
 const description =
-  "Answers to common questions about the Mikaelson Initiative, our community, programs and Mikaelson Labs, and how to get involved.";
+  "Answers to common questions about the Mikaelson Initiative, our four-part ecosystem (School Club, Labs, Partnership Network, Institute), and how to get involved.";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions",
@@ -34,7 +34,7 @@ export default function FaqPage() {
           </Reveal>
           <Reveal immediate delay={0.08}>
             <p className="mx-auto mt-6 max-w-[52ch] text-[18px] leading-[1.7] text-[#555] dark:text-white/65">
-              Find answers to common questions about the Mikaelson Initiative, our community, and programs.
+              Find answers to common questions about the Mikaelson Initiative, our ecosystem, our mission, and how to walk with us.
             </p>
           </Reveal>
         </section>

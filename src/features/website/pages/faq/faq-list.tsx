@@ -93,17 +93,26 @@ export function FaqList() {
                   )}
                   {item.links && (
                     <ul className="mt-4 flex flex-wrap gap-x-6">
-                      {item.links.map((l) => (
-                        <li key={l.href}>
-                          <Link
-                            href={l.href}
-                            className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-[#003E45] underline decoration-[#003E45]/25 underline-offset-4 transition-[text-decoration-color] duration-150 ease-[ease] hover:decoration-[#003E45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:text-[#5CE1E6] dark:decoration-[#5CE1E6]/30 dark:hover:decoration-[#5CE1E6]"
-                          >
-                            {l.label}
-                            <ArrowRight className="size-4" aria-hidden="true" />
-                          </Link>
-                        </li>
-                      ))}
+                      {item.links.map((l) => {
+                        const isExternal = l.external || l.href.startsWith("http");
+                        const linkClass =
+                          "inline-flex min-h-11 items-center gap-1.5 font-semibold text-[#003E45] underline decoration-[#003E45]/25 underline-offset-4 transition-[text-decoration-color] duration-150 ease-[ease] hover:decoration-[#003E45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:text-[#5CE1E6] dark:decoration-[#5CE1E6]/30 dark:hover:decoration-[#5CE1E6]";
+                        return (
+                          <li key={l.href}>
+                            {isExternal ? (
+                              <a href={l.href} target="_blank" rel="noreferrer" className={linkClass}>
+                                {l.label}
+                                <ArrowRight className="size-4" aria-hidden="true" />
+                              </a>
+                            ) : (
+                              <Link href={l.href} className={linkClass}>
+                                {l.label}
+                                <ArrowRight className="size-4" aria-hidden="true" />
+                              </Link>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>

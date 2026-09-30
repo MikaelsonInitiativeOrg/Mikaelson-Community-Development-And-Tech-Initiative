@@ -78,7 +78,11 @@ export default function SponsorPage() {
       </section>
 
       {/* How to partner: a real sequence, so it's numbered. */}
-      <section aria-labelledby="partner-heading" className="bg-[#003E45] text-white dark:bg-[#003E45]/45">
+      <section
+        id="how-to-partner"
+        aria-labelledby="partner-heading"
+        className="scroll-mt-20 bg-[#003E45] text-white dark:bg-[#003E45]/45"
+      >
         <div className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6 md:py-28">
           <Reveal className="max-w-2xl">
             <h2 id="partner-heading" className="text-[28px] leading-tight font-bold tracking-[-0.02em] md:text-[40px]">

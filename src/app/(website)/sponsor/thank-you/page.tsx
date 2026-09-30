@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+import { processSponsorshipEmail } from "@/lib/sponsorship-notification";
+
 type Verified = { ok: true; amount: number; organization?: string; reference: string } | { ok: false };
 
 async function verify(reference: string): Promise<Verified> {
@@ -30,10 +32,25 @@ async function verify(reference: string): Promise<Verified> {
     });
     const data = await res.json();
     if (!res.ok || data?.data?.status !== "success") return { ok: false };
+
+    const amount = Number(data.data.amount) / 100;
+    const organization = data.data.metadata?.organization;
+    const contactName = data.data.metadata?.contact_name;
+    const email = data.data.customer?.email;
+
+    // Send receipt to donor and alert to Mikaelson team (idempotent)
+    await processSponsorshipEmail({
+      reference: data.data.reference,
+      amount,
+      email,
+      organization,
+      contactName,
+    });
+
     return {
       ok: true,
-      amount: Number(data.data.amount) / 100,
-      organization: data.data.metadata?.organization,
+      amount,
+      organization,
       reference: data.data.reference,
     };
   } catch {

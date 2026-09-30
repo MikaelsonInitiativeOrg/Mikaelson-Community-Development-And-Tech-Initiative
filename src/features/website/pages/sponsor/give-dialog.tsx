@@ -151,6 +151,51 @@ export function GiveButton({
 /* ------------------------------------------------------ Individuals */
 
 function BankTransfer() {
+  const [showNotice, setShowNotice] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [bank, setBank] = useState(BANK_ACCOUNTS[0].bank);
+  const [amount, setAmount] = useState("");
+  const [reference, setReference] = useState("");
+
+  const submitNotice = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const naira = Number(amount.replace(/[^\d]/g, ""));
+    if (!naira || naira < 100) {
+      setError("Please enter a valid amount of at least ₦100.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/sponsor/transfer-notice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          bank,
+          amount: naira,
+          reference: reference.trim() || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setSuccess(email);
+      } else {
+        setError(data.error || "Unable to send your notice right now.");
+      }
+    } catch {
+      setError("Network error. Please try again or email us directly.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -170,17 +215,141 @@ function BankTransfer() {
         ))}
       </div>
 
-      <p className="mt-5 text-[15px] leading-relaxed text-[#555] dark:text-white/65">
-        When you&rsquo;ve sent it, email us your transfer confirmation so we can thank you properly.
-      </p>
-      <a
-        href={`mailto:${CONFIRM_EMAIL}?subject=${encodeURIComponent("Transfer confirmation: my gift to the Mikaelson Initiative")}`}
-        className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-[#003E45]/25 px-6 text-base font-semibold text-[#003E45] transition-[transform,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#003E45] active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:border-white/25 dark:text-white dark:hover:border-white"
-      >
-        <Mail className="size-4" aria-hidden="true" />
-        Email my confirmation
-      </a>
-      <p className="mt-3 text-center text-[13px] break-all text-[#555] dark:text-white/55">{CONFIRM_EMAIL}</p>
+      {success ? (
+        <div className="mt-5 rounded-2xl bg-[#EEFCFC] p-5 text-[#003E45] dark:bg-[#003E45]/40 dark:text-[#5CE1E6]">
+          <div className="flex items-center gap-2 font-bold text-[16px]">
+            <Check className="size-5" />
+            Transfer notice received!
+          </div>
+          <p className="mt-2 text-[14px] leading-relaxed text-[#333] dark:text-white/80">
+            Thank you! A confirmation receipt has been sent to <strong>{success}</strong>. Our finance team will
+            reconcile the transfer shortly.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setSuccess(null);
+              setShowNotice(false);
+            }}
+            className="mt-4 text-xs font-semibold text-[#003E45] underline dark:text-[#5CE1E6]"
+          >
+            Submit another notice
+          </button>
+        </div>
+      ) : showNotice ? (
+        <form
+          onSubmit={submitNotice}
+          className="mt-6 flex flex-col gap-3 rounded-2xl border border-black/10 bg-[#FAFDFD] p-5 dark:border-white/10 dark:bg-white/5"
+        >
+          <p className="text-[14px] font-bold text-[#003E45] dark:text-[#5CE1E6]">
+            Confirm your bank transfer
+          </p>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[#444] dark:text-white/70">Your name</label>
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputClass}
+              placeholder="Full Name"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[#444] dark:text-white/70">
+              Your email (for confirmation receipt)
+            </label>
+            <input
+              required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+              placeholder="your.email@example.com"
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-[#444] dark:text-white/70">Bank transferred to</label>
+              <select
+                value={bank}
+                onChange={(e) => setBank(e.target.value)}
+                className={`${inputClass} cursor-pointer`}
+              >
+                {BANK_ACCOUNTS.map((b) => (
+                  <option key={b.bank} value={b.bank}>
+                    {b.bank}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-[#444] dark:text-white/70">Amount (₦)</label>
+              <input
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 25,000"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[#444] dark:text-white/70">
+              Transfer reference or teller note (optional)
+            </label>
+            <input
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className={inputClass}
+              placeholder="Reference number or narration"
+            />
+          </div>
+
+          {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+
+          <div className="mt-2 flex gap-2">
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-[#003E45] px-5 text-sm font-bold text-white transition-opacity hover:bg-[#002B30] disabled:opacity-50 dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+            >
+              {busy ? "Sending confirmation…" : "Send transfer notice"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowNotice(false)}
+              className="inline-flex min-h-11 items-center rounded-full border border-black/10 px-4 text-xs font-semibold text-[#666] hover:bg-black/5 dark:border-white/15 dark:text-white/70"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <p className="mt-5 text-[15px] leading-relaxed text-[#555] dark:text-white/65">
+            When you&rsquo;ve sent it, submit your transfer confirmation so we can email your receipt and thank you
+            properly.
+          </p>
+          <div className="mt-4 flex flex-col gap-2.5">
+            <button
+              type="button"
+              onClick={() => setShowNotice(true)}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#003E45] px-6 text-base font-semibold text-white shadow-[0_4px_0_-1px_#002B30] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#002B30] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:bg-[#5CE1E6] dark:text-[#050A0A]"
+            >
+              <Check className="size-4" aria-hidden="true" />
+              Notify us of your transfer
+            </button>
+            <a
+              href={`mailto:${CONFIRM_EMAIL}?subject=${encodeURIComponent("Transfer confirmation: my gift to the Mikaelson Initiative")}`}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#003E45]/25 px-6 text-sm font-semibold text-[#003E45] transition-[transform,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#003E45] active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:border-white/25 dark:text-white dark:hover:border-white"
+            >
+              <Mail className="size-4" aria-hidden="true" />
+              Or email confirmation manually
+            </a>
+          </div>
+          <p className="mt-3 text-center text-[13px] break-all text-[#555] dark:text-white/55">{CONFIRM_EMAIL}</p>
+        </>
+      )}
     </>
   );
 }

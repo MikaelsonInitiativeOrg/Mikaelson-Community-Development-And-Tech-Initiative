@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({
       href: "/sponsor",
       dropdown: [
         { label: "Sponsor a Project", href: "/sponsor" },
-        { label: "Partner with Us", href: "/partners" },
+        { label: "Partner with Us", href: "/sponsor#how-to-partner" },
         { label: "Volunteer with Us", href: "/volunteer" },
         { label: "Contact Us", href: "/contact" },
       ],

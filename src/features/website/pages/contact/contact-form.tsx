@@ -51,14 +51,24 @@ export function ContactForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setSendError(null);
-    const body = `${values.message}\n\n${values.name}\n${values.email}`;
-    const href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(values.subject)}&body=${encodeURIComponent(body)}`;
     const ok = await run(async () => {
       try {
-        window.location.href = href;
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "We couldn't deliver your message right now.");
+        }
         return true;
-      } catch {
-        setSendError(`We couldn't open your email app. Please write to us at ${CONTACT_EMAIL}.`);
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : `We couldn't reach the server. Please write to us directly at ${CONTACT_EMAIL}.`;
+        setSendError(msg);
         return false;
       }
     });
@@ -79,15 +89,12 @@ export function ContactForm() {
           tabIndex={-1}
           className="mt-6 text-[26px] leading-tight font-bold tracking-[-0.015em] text-[#111] outline-none dark:text-white"
         >
-          Your letter is ready
+          Your letter has been sent
         </h2>
         <p className="mt-3 max-w-[46ch] text-[17px] leading-[1.65] text-[#555] dark:text-white/65">
-          Thank you, {sent.name}. Your email app should now be open with your message written out. Press send there
-          and it will reach us; any reply will come to {sent.email}. If nothing opened, email us at{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-[#003E45] underline dark:text-[#5CE1E6]">
-            {CONTACT_EMAIL}
-          </a>
-          .
+          Thank you, {sent.name}. We have received your message safely. A confirmation copy has been sent to{" "}
+          <strong className="font-semibold text-[#111] dark:text-white">{sent.email}</strong>. Our team is reviewing
+          your letter and will get back to you shortly.
         </p>
         <button
           type="button"
@@ -176,7 +183,7 @@ export function ContactForm() {
       <div className="mt-8 flex flex-wrap items-center gap-4">
         <EnvelopeSend status={status}>
           <button type="submit" disabled={busy} aria-disabled={busy} className={`${btn.primary} disabled:cursor-default`}>
-            {busy ? "Opening your email…" : "Send message"}
+            {busy ? "Sending your letter…" : "Send message"}
           </button>
         </EnvelopeSend>
       </div>
