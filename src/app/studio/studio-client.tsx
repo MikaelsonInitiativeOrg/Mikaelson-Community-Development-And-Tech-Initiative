@@ -35,35 +35,6 @@ import { ModeToggle } from "@/components/mode-toggler";
 import ArticleBody from "@/features/website/pages/blog/article-body";
 import { formatDate, readingMinutes, type Post } from "@/features/website/pages/blog/posts";
 
-const ARTISTIC_STORY_TEMPLATE = `### The Power of 15 Minutes
-
-Every morning before academic periods commence, students in our partner schools gather in circles of eight. There is no lecture, no grading, and no lecturing adult. Instead, there is a student peer facilitator and an accountability sheet.
-
-Each student states three things:
-1. What habit they stayed true to yesterday.
-2. Where their discipline slipped and why.
-3. The singular pledge they are making for today.
-
----
-
-> "Discipline is not an innate gift given to a chosen few; it is a muscle exercised in small, transparent daily steps."
-
-### Why Peer Accountability Sparks Growth
-
-When an adult tells a teenager to cultivate focus, it is often received as discipline from above. But when a student sees their desk mate admit to staying up scrolling on their phone and making a commitment to turn it off at 9 PM tonight, the dynamic shifts completely.
-
-In our first pilot across secondary schools:
-- Over ==84% of participating students== completed their weekly academic targets without parental reminders.
-- Punctuality across participating classes improved by ==62%==.
-- Teachers reported a noticeable drop in classroom disruptions.
-
----
-
-> [!HIGHLIGHT] When young minds build for people they personally know and care about, education transforms from abstract lectures into active leadership.
-
-### Looking Ahead
-
-As we expand the Mikaelson School Club ecosystem, our mission remains grounded: creating environments where African students realize that greatness is not an accident—it is daily practice.`;
 
 const CATEGORY_PRESETS = [
   "Leadership & Discipline",
@@ -88,6 +59,29 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   const [authenticated, setAuthenticated] = useState(initialAuthenticated);
   const [passkeyInput, setPasskeyInput] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+
+  // The Studio's own confirmation dialog (instead of the browser's
+  // confirm(), which some browsers block silently, so buttons appeared
+  // to do nothing).
+  const [confirmBox, setConfirmBox] = useState<null | {
+    title: string;
+    message: string;
+    action: string;
+    resolve: (ok: boolean) => void;
+  }>(null);
+  const ask = (title: string, message: string, action = "Delete") =>
+    new Promise<boolean>((resolve) => setConfirmBox({ title, message, action, resolve }));
+  const answer = (ok: boolean) => {
+    confirmBox?.resolve(ok);
+    setConfirmBox(null);
+  };
+
+  // The server refused the session (expired, or the passkey changed):
+  // go back to sign-in instead of failing quietly.
+  const sessionEnded = () => {
+    setAuthenticated(false);
+    toast.error("Your Studio session has ended. Please sign in again.");
+  };
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
@@ -219,11 +213,20 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) return;
+    const ok = await ask(
+      "Delete this story?",
+      `"${title}" will be removed from the blog and the home page. This can't be undone.`,
+    );
+    if (!ok) return;
 
     const toastId = toast.loading(`Deleting "${title}"...`);
     try {
       const res = await fetch(`/api/studio/posts/${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.status === 401) {
+        toast.dismiss(toastId);
+        sessionEnded();
+        return;
+      }
       if (res.ok) {
         toast.success("Story permanently deleted.", { id: toastId });
         setPosts((prev) => prev.filter((p) => p._id !== id && p.slug?.current !== id));
@@ -241,17 +244,21 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   };
 
   const handleClearAll = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete ALL blog stories? This will permanently wipe all existing posts and cannot be undone."
-      )
-    ) {
-      return;
-    }
+    const ok = await ask(
+      "Delete every story?",
+      "All stories will be removed from the blog and the home page. This can't be undone.",
+      "Delete all",
+    );
+    if (!ok) return;
 
     const toastId = toast.loading("Deleting all stories...");
     try {
       const res = await fetch("/api/studio/posts", { method: "DELETE" });
+      if (res.status === 401) {
+        toast.dismiss(toastId);
+        sessionEnded();
+        return;
+      }
       if (res.ok) {
         toast.success("All stories deleted permanently.", { id: toastId });
         setPosts([]);
@@ -269,12 +276,18 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   const handleTogglePopup = async (post: Post) => {
     const nextStatus = !post.showAsPopup;
     try {
-      const res = await fetch(`/api/studio/posts/${post._id}`, {
+      const res = await fetch(`/api/studio/posts/${encodeURIComponent(post._id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ showAsPopup: nextStatus }),
       });
 
+      if (res.status === 401) return sessionEnded();
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        toast.error(err?.error || "Failed to update pop-up status.");
+        return;
+      }
       if (res.ok) {
         toast.success(
           nextStatus
@@ -309,6 +322,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
           body: JSON.stringify(payload),
         });
 
+        if (res.status === 401) return sessionEnded();
         if (res.ok) {
           toast.success(
             publishStatus === "published"
@@ -318,16 +332,17 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
           setEditingPost(null);
           loadPosts();
         } else {
-          const err = await res.json();
+          const err = await res.json().catch(() => ({}));
           toast.error(err.error || "Failed to create story.");
         }
       } else {
-        const res = await fetch(`/api/studio/posts/${editingPost._id}`, {
+        const res = await fetch(`/api/studio/posts/${encodeURIComponent(editingPost._id)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
+        if (res.status === 401) return sessionEnded();
         if (res.ok) {
           toast.success(
             publishStatus === "published"
@@ -337,7 +352,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
           setEditingPost(null);
           loadPosts();
         } else {
-          const err = await res.json();
+          const err = await res.json().catch(() => ({}));
           toast.error(err.error || "Failed to update story.");
         }
       }
@@ -384,8 +399,12 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
         body: formData,
       });
 
+      if (res.status === 401) {
+        sessionEnded();
+        return null;
+      }
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         toast.error(err.error || "Failed to upload image.");
         return null;
       }
@@ -586,27 +605,56 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   if (editingPost) {
     const minutes = readingMinutes(editingPost.body);
 
-    const insertMarkdown = (prefix: string, suffix: string = "") => {
+    // Toolbar helpers: every button styles the writer's own text. Inline
+    // styles wrap the selection; block styles put it on its own paragraph;
+    // with nothing selected, a short placeholder is inserted and selected
+    // so typing replaces it.
+    const editBody = (build: (before: string, selected: string, after: string) => [string, number, number]) => {
       const textarea = document.getElementById("story-body-input") as HTMLTextAreaElement | null;
       if (!textarea) return;
-
+      const body = editingPost.body || "";
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      const selected = editingPost.body?.substring(start, end) || "text";
-      const before = editingPost.body?.substring(0, start) || "";
-      const after = editingPost.body?.substring(end) || "";
-
-      const newBody = `${before}${prefix}${selected}${suffix}${after}`;
-      setEditingPost({ ...editingPost, body: newBody });
-
+      const [next, selStart, selEnd] = build(body.slice(0, start), body.slice(start, end), body.slice(end));
+      setEditingPost({ ...editingPost, body: next });
       setTimeout(() => {
         textarea.focus();
-        textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+        textarea.setSelectionRange(selStart, selEnd);
       }, 50);
     };
 
+    const insertMarkdown = (prefix: string, suffix = "", placeholder = "text") =>
+      editBody((before, selected, after) => {
+        const inner = selected || placeholder;
+        return [`${before}${prefix}${inner}${suffix}${after}`, before.length + prefix.length, before.length + prefix.length + inner.length];
+      });
+
+    /** Puts the selection (or a placeholder) on its own paragraph with a prefix. */
+    const insertBlock = (prefix: string, suffix = "", placeholder = "") =>
+      editBody((before, selected, after) => {
+        const head = before.replace(/\s*$/, "");
+        const lead = head ? `${head}\n\n` : "";
+        const inner = selected.trim() || placeholder;
+        const tail = after.replace(/^\s*/, "");
+        const next = `${lead}${prefix}${inner}${suffix}\n\n${tail}`;
+        const at = lead.length + prefix.length;
+        return [next, inner ? at : at + suffix.length + 2, inner ? at + inner.length : at + suffix.length + 2];
+      });
+
+    /** Turns the selected lines into a list (or starts one). */
+    const insertList = (ordered: boolean) =>
+      editBody((before, selected, after) => {
+        const lines = (selected.trim() || "First point").split(/\n+/).map((l) => l.replace(/^\s*([-*]|\d+\.)\s+/, "").trim());
+        const list = lines.map((l, i) => `${ordered ? `${i + 1}.` : "-"} ${l}`).join("\n");
+        const head = before.replace(/\s*$/, "");
+        const lead = head ? `${head}\n\n` : "";
+        const next = `${lead}${list}\n\n${after.replace(/^\s*/, "")}`;
+        return [next, lead.length, lead.length + list.length];
+      });
+
     return (
       <div className="flex min-h-screen flex-col">
+        {confirmBox && <ConfirmDialog box={confirmBox} onAnswer={answer} />}
         {/* Editor Top Bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/10 bg-white/95 px-4 backdrop-blur-md sm:px-8 dark:border-white/10 dark:bg-[#0c1414]/95">
           <div className="flex items-center gap-3">
@@ -1089,25 +1137,6 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                     Story Content (Artistic Layout)
                   </label>
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (editingPost.body && editingPost.body.trim().length > 15) {
-                          if (
-                            !confirm(
-                              "Replace current story content with the Mikaelson Artistic Template?"
-                            )
-                          )
-                            return;
-                        }
-                        setEditingPost({ ...editingPost, body: ARTISTIC_STORY_TEMPLATE });
-                        toast.success("Loaded artistic story template!");
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-[#003E45]/20 bg-[#EEFCFC] px-3 py-1 text-[11px] font-bold text-[#003E45] transition-all hover:bg-[#003E45] hover:text-white active:scale-95 dark:border-[#5CE1E6]/30 dark:bg-white/5 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6] dark:hover:text-black"
-                    >
-                      <Sparkles className="size-3" />
-                      <span>✨ Load Artistic Template</span>
-                    </button>
                     <span className="text-xs text-[#777] dark:text-white/40">{minutes} min read</span>
                   </div>
                 </div>
@@ -1117,7 +1146,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <button
                     type="button"
                     title="Section Heading (H2)"
-                    onClick={() => insertMarkdown("## ")}
+                    onClick={() => insertBlock("## ", "", "Section heading")}
                     className="rounded px-2.5 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     H2
@@ -1125,7 +1154,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <button
                     type="button"
                     title="Subheading (H3)"
-                    onClick={() => insertMarkdown("### ")}
+                    onClick={() => insertBlock("### ", "", "Subheading")}
                     className="rounded px-2.5 py-1 text-xs font-bold text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     H3
@@ -1162,8 +1191,8 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   {/* Artistic Squiggle Divider */}
                   <button
                     type="button"
-                    title="Insert signature turquoise hand-drawn wavy line divider"
-                    onClick={() => insertMarkdown("\n\n---\n\n")}
+                    title="Add a hand-drawn divider at the cursor"
+                    onClick={() => insertBlock("---")}
                     className="inline-flex items-center gap-1 rounded bg-[#003E45]/10 px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/20 dark:bg-[#5CE1E6]/15 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6]/25"
                   >
                     <span>〰️ Wavy Line</span>
@@ -1172,8 +1201,8 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   {/* Cyan Pullquote */}
                   <button
                     type="button"
-                    title="Insert signature cyan pullquote with left accent bar"
-                    onClick={() => insertMarkdown('\n\n> "Add your inspiring pullquote here..."\n\n')}
+                    title="Turn the selected words into a pull quote"
+                    onClick={() => insertBlock('> "', '"', "Your quote")}
                     className="inline-flex items-center gap-1 rounded bg-[#003E45]/10 px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/20 dark:bg-[#5CE1E6]/15 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6]/25"
                   >
                     <Quote className="size-3" />
@@ -1183,8 +1212,8 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   {/* Key Insight Callout */}
                   <button
                     type="button"
-                    title="Insert highlighted takeaway card"
-                    onClick={() => insertMarkdown('\n\n> [!HIGHLIGHT] Add a key insight or breakthrough takeaway here.\n\n')}
+                    title="Turn the selected words into a key-insight card"
+                    onClick={() => insertBlock("> [!HIGHLIGHT] ", "", "Your key takeaway")}
                     className="inline-flex items-center gap-1 rounded bg-[#003E45]/10 px-2.5 py-1 text-xs font-bold text-[#003E45] hover:bg-[#003E45]/20 dark:bg-[#5CE1E6]/15 dark:text-[#5CE1E6] dark:hover:bg-[#5CE1E6]/25"
                   >
                     <Lightbulb className="size-3" />
@@ -1196,7 +1225,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <button
                     type="button"
                     title="Bullet List"
-                    onClick={() => insertMarkdown("\n- Milestone 1\n- Milestone 2\n")}
+                    onClick={() => insertList(false)}
                     className="rounded px-2 py-1 text-xs text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     • List
@@ -1204,7 +1233,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <button
                     type="button"
                     title="Numbered List"
-                    onClick={() => insertMarkdown("\n1. Step one\n2. Step two\n3. Step three\n")}
+                    onClick={() => insertList(true)}
                     className="rounded px-2 py-1 text-xs text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     1. List
@@ -1212,7 +1241,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <button
                     type="button"
                     title="Insert Link"
-                    onClick={() => insertMarkdown("[link text](", ")")}
+                    onClick={() => insertMarkdown("[", "](https://)", "link text")}
                     className="rounded px-2 py-1 text-xs text-[#444] hover:bg-black/10 dark:text-white/80 dark:hover:bg-white/10"
                   >
                     Link
@@ -1249,7 +1278,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <textarea
                     id="story-body-input"
                     rows={15}
-                    placeholder="Write your story using markdown... (Tip: Click 'Load Artistic Template' above to start with a gorgeous layout!)"
+                    placeholder="Write your story. It gets the artistic layout automatically: a drop-cap opening, drawn dividers between sections and a closing flourish. Select words and use the toolbar for quotes, highlights and key insights."
                     value={editingPost.body || ""}
                     onChange={(e) => setEditingPost({ ...editingPost, body: e.target.value })}
                     onDragOver={(e) => e.preventDefault()}
@@ -1363,6 +1392,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
 
   return (
     <div className="min-h-screen">
+      {confirmBox && <ConfirmDialog box={confirmBox} onAnswer={answer} />}
       {/* Studio Header */}
       <header className="sticky top-0 z-30 border-b border-black/10 bg-white/95 backdrop-blur-md dark:border-white/10 dark:bg-[#0c1414]/95">
         <div className="mx-auto flex h-18 max-w-[1240px] items-center justify-between gap-4 px-4 sm:px-8">
@@ -1649,6 +1679,63 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+/** The Studio's confirmation dialog: focus starts on Cancel, Escape cancels. */
+function ConfirmDialog({
+  box,
+  onAnswer,
+}: {
+  box: { title: string; message: string; action: string };
+  onAnswer: (ok: boolean) => void;
+}) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    cancelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onAnswer(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onAnswer]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
+      onClick={() => onAnswer(false)}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="studio-confirm-title"
+        aria-describedby="studio-confirm-message"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#0E1718] dark:ring-1 dark:ring-white/10"
+      >
+        <h2 id="studio-confirm-title" className="text-[18px] font-bold text-[#111] dark:text-white">
+          {box.title}
+        </h2>
+        <p id="studio-confirm-message" className="mt-2 text-[14px] leading-relaxed text-[#555] dark:text-white/65">
+          {box.message}
+        </p>
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            ref={cancelRef}
+            type="button"
+            onClick={() => onAnswer(false)}
+            className="min-h-10 rounded-full border border-black/15 px-4 text-sm font-semibold text-[#333] hover:border-black/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0097A7] dark:border-white/20 dark:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => onAnswer(true)}
+            className="min-h-10 rounded-full bg-rose-600 px-4 text-sm font-semibold text-white hover:bg-rose-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+          >
+            {box.action}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

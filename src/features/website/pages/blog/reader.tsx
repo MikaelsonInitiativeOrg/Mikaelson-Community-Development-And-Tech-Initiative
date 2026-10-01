@@ -4,7 +4,7 @@ import { useMemo, type RefObject } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ExternalLink, FileEdit, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, X } from "lucide-react";
 import { formatDate, imageUrl, readingMinutes, type Post } from "./posts";
 import { DrawnLine } from "./drawn-line";
 import { ShareBar } from "./share-bar";
@@ -91,14 +91,6 @@ export function Reader({
           </p>
 
           <div className="flex items-center gap-2">
-            <Link
-              href={`/studio?edit=${slug}`}
-              title="Edit this story in Mikaelson Studio"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-black/10 px-3.5 text-xs font-bold text-[#003e45] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#e8f7f8] active:scale-[0.97] dark:border-white/15 dark:text-[#5ce1e6] dark:hover:bg-white/10"
-            >
-              <FileEdit size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">Edit</span>
-            </Link>
 
             <Link
               href={`/blog/${slug}`}

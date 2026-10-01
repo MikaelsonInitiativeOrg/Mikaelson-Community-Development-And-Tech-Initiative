@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, FileEdit } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getAllPosts, getAllPostSlugs, getPostBySlug } from "@/lib/blog";
 import {
   formatDate,
@@ -155,14 +155,6 @@ export default async function BlogPostPage({ params }: PageProps) {
             </Link>
 
             <div className="flex items-center gap-3">
-              <Link
-                href={`/studio?edit=${slug}`}
-                title="Edit this story in Mikaelson Studio"
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#003e45]/20 bg-[#e8f7f8]/70 px-3.5 text-xs font-bold text-[#003e45] transition-all hover:bg-[#003e45] hover:text-white active:scale-95 dark:border-[#5ce1e6]/30 dark:bg-white/5 dark:text-[#5ce1e6] dark:hover:bg-[#5ce1e6] dark:hover:text-black"
-              >
-                <FileEdit size={13} aria-hidden="true" />
-                <span>Edit Story</span>
-              </Link>
 
               <span className="text-xs font-semibold text-[#666] dark:text-white/60">
                 {minutes} min read
@@ -324,13 +316,6 @@ export default async function BlogPostPage({ params }: PageProps) {
                   Back to all stories
                 </Link>
 
-                <Link
-                  href={`/studio?edit=${slug}`}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#003e45] px-6 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#002b30] active:scale-95 dark:bg-[#5ce1e6] dark:text-[#050a0a] dark:hover:bg-[#4bcdd2]"
-                >
-                  <FileEdit size={16} aria-hidden="true" />
-                  Edit this Story in Studio
-                </Link>
               </div>
             </div>
           </article>

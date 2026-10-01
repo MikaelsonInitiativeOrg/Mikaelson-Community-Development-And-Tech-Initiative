@@ -20,9 +20,43 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
   // Split into paragraphs / blocks by double newlines
   const blocks = rawText.split(/\n\s*\n/);
 
+  // The artistic treatment is applied to every story automatically, from
+  // whatever the writer typed: the opening paragraph becomes a lead with a
+  // turquoise drop cap, a hand-drawn divider opens each new section, and a
+  // small flourish closes the story. Writers don't need any special codes.
+  const kinds = blocks.map((b) => blockKind(b.trim()));
+  const firstParagraph = kinds.indexOf("paragraph");
+  const lastBlock = kinds.reduce((last, k, i) => (k === "empty" ? last : i), -1);
+  const prevKind = (i: number) => {
+    for (let j = i - 1; j >= 0; j--) if (kinds[j] !== "empty") return kinds[j];
+    return null;
+  };
+  const sectionDivider = (i: number) => {
+    const before = prevKind(i);
+    return before && before !== "divider" && before !== "heading" ? (
+      <div aria-hidden="true" className="mt-14 mb-2 flex justify-start">
+        <DrawnLine variant="path" className="h-6 w-36 text-[#5ce1e6]" />
+      </div>
+    ) : null;
+  };
+
   return (
     <div className="max-w-[68ch] text-[1.0625rem] leading-[1.8] text-[#333] md:text-[1.125rem] dark:text-white/80">
-      {blocks.map((block, idx) => {
+      {blocks.map((block, idx) => (
+        <React.Fragment key={idx}>
+          {kinds[idx] === "heading" && sectionDivider(idx)}
+          {renderBlock(block, idx)}
+          {idx === lastBlock && kinds[idx] !== "divider" && (
+            <div aria-hidden="true" className="mt-12 flex justify-start">
+              <DrawnLine variant="underline" className="h-5 w-28 text-[#5ce1e6]" />
+            </div>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+
+  function renderBlock(block: string, idx: number): React.ReactNode {
         const trimmed = block.trim();
         if (!trimmed) return null;
 
@@ -174,15 +208,38 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
           );
         }
 
+        // Opening paragraph: a lead with a turquoise drop cap.
+        if (idx === firstParagraph && /^[A-Za-z]/.test(trimmed)) {
+          return (
+            <p
+              key={idx}
+              className="mt-6 text-[1.1875rem] leading-[1.75] text-[#222] first:mt-0 first-letter:float-left first-letter:mt-1 first-letter:mr-3 first-letter:text-[3.75em] first-letter:leading-[0.8] first-letter:font-extrabold first-letter:text-[#0097a7] md:text-[1.25rem] dark:text-white/90 dark:first-letter:text-[#5ce1e6]"
+            >
+              {parseInlineMarkdown(trimmed)}
+            </p>
+          );
+        }
+
         // Standard Paragraph
         return (
           <p key={idx} className="mt-6 first:mt-0">
             {parseInlineMarkdown(trimmed)}
           </p>
         );
-      })}
-    </div>
-  );
+  }
+}
+
+type BlockKind = "empty" | "divider" | "heading" | "quote" | "image" | "list" | "paragraph";
+
+function blockKind(t: string): BlockKind {
+  if (!t) return "empty";
+  if (/^[-*_]{3,}$/.test(t)) return "divider";
+  if (/^#{1,3}\s/.test(t)) return "heading";
+  if (t.startsWith("> ")) return "quote";
+  if (/^!\[(.*?)\]\((.*?)\)$/.test(t)) return "image";
+  const lines = t.split("\n");
+  if (lines.every((l) => /^\s*[-*]\s+/.test(l)) || lines.every((l) => /^\s*\d+\.\s+/.test(l))) return "list";
+  return "paragraph";
 }
 
 /** Parses bold, italic, and links in a line */
