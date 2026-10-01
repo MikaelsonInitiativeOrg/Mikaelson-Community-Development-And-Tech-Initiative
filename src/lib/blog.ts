@@ -1,5 +1,6 @@
 import { getDb } from "./db";
 import { fetchSanityStories } from "./sanity-import";
+import { deleteStats } from "./blog-stats";
 import { revalidatePath } from "next/cache";
 import type { Post } from "@/features/website/pages/blog/posts";
 
@@ -379,6 +380,9 @@ export async function updatePost(id: string, postData: Partial<Post>): Promise<P
 
 export async function deletePost(id: string): Promise<boolean> {
   requireWritableStore();
+  // Clear the story's views, reads and reactions too (stats are kept by post id).
+  const existing = await getPostBySlug(id);
+  if (existing) await deleteStats(existing._id).catch((err) => console.error("Deleting story stats failed:", err));
   const sql = getDb();
   if (sql) {
     await ensureTable();
@@ -397,6 +401,7 @@ export async function deletePost(id: string): Promise<boolean> {
 
 export async function deleteAllPosts(): Promise<boolean> {
   requireWritableStore();
+  await deleteStats().catch((err) => console.error("Deleting story stats failed:", err));
   const sql = getDb();
   if (sql) {
     await ensureTable();

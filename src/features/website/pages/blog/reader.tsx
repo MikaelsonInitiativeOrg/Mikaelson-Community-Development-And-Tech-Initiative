@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, X } from "lucide-react";
 import { formatDate, imageUrl, readingMinutes, type Post } from "./posts";
 import { DrawnLine } from "./drawn-line";
 import { ShareBar } from "./share-bar";
+import { StoryStats } from "./story-stats";
 import styles from "./blog.module.css";
 
 function BodyLoading() {
@@ -211,6 +212,9 @@ export function Reader({
               ) : (
                 <p className="text-base text-[#555] dark:text-white/60">This story has no text yet.</p>
               )}
+
+              {/* Seen / read counts and like / dislike */}
+              <StoryStats key={slug} slug={slug} minutes={minutes} />
 
               {/* Share Bar */}
               <div className="mt-12 border-y border-black/10 py-6 dark:border-white/10">

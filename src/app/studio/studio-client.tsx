@@ -29,6 +29,9 @@ import {
   Trash2,
   Upload,
   X,
+  BookOpenCheck,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggler";
@@ -84,6 +87,10 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
   };
 
   const [posts, setPosts] = useState<Post[]>([]);
+  // Each story's seen / read / like / dislike totals (team-only view).
+  const [postStats, setPostStats] = useState<
+    Record<string, { views: number; reads: number; likes: number; dislikes: number }>
+  >({});
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -129,6 +136,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
         const data = await res.json();
         const loadedPosts: Post[] = data.posts || [];
         setPosts(loadedPosts);
+        setPostStats(data.stats || {});
 
         if (editParam && !editingPost) {
           const target = loadedPosts.find(
@@ -1620,6 +1628,26 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                           <span>•</span>
                           <span>{minutes} min read</span>
                         </div>
+
+                        {(() => {
+                          const st = postStats[post._id] ?? { views: 0, reads: 0, likes: 0, dislikes: 0 };
+                          return (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs font-medium text-[#003e45] dark:text-[#5ce1e6]">
+                              <span className="inline-flex items-center gap-1" title="People who opened the story">
+                                <Eye className="size-3.5" aria-hidden="true" /> {st.views} seen
+                              </span>
+                              <span className="inline-flex items-center gap-1" title="People who read to the end">
+                                <BookOpenCheck className="size-3.5" aria-hidden="true" /> {st.reads} read
+                              </span>
+                              <span className="inline-flex items-center gap-1" title="Likes">
+                                <ThumbsUp className="size-3.5" aria-hidden="true" /> {st.likes}
+                              </span>
+                              <span className="inline-flex items-center gap-1" title="Dislikes (only the team sees this)">
+                                <ThumbsDown className="size-3.5" aria-hidden="true" /> {st.dislikes}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 

@@ -109,6 +109,22 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Google Analytics 4 (gtag.js) for property G-2XRR90XDZ8. The GTM
+            container above separately sends to G-0DG0V45VPZ; if it is ever set to
+            send to G-2XRR90XDZ8 too, remove one of them or visits count twice. */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-2XRR90XDZ8" strategy="afterInteractive" />
+        <Script
+          id="ga4-gtag"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-2XRR90XDZ8');
+            `,
+          }}
+        />
       </head>
       <body className={`${poppins.variable} antialiased`}>
         <QueryProvider>

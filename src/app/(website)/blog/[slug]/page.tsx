@@ -12,6 +12,7 @@ import {
 } from "@/features/website/pages/blog/posts";
 import ArticleBody from "@/features/website/pages/blog/article-body";
 import { ShareBar } from "@/features/website/pages/blog/share-bar";
+import { StoryStats } from "@/features/website/pages/blog/story-stats";
 import { DrawnLine } from "@/features/website/pages/blog/drawn-line";
 
 export const dynamic = "force-dynamic";
@@ -245,6 +246,9 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <DrawnLine variant="path" className="mt-8 mb-10 h-6 w-40" />
 
                 <ArticleBody body={bodyText} />
+
+                {/* Seen / read counts and like / dislike */}
+                <StoryStats slug={slug} minutes={minutes} />
 
                 {/* Social Share Bar */}
                 <div className="mt-12 border-y border-black/10 py-6 dark:border-white/10">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isStudioRequest } from "@/lib/studio-auth";
 import { createPost, deleteAllPosts, getAllPosts } from "@/lib/blog";
+import { getAllStats } from "@/lib/blog-stats";
 
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const posts = await getAllPosts(true); // include drafts
-    return NextResponse.json({ posts });
+    // Each story's seen / read / like / dislike totals, for the team.
+    const stats = await getAllStats().catch(() => ({}));
+    return NextResponse.json({ posts, stats });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed to fetch posts" }, { status: 500 });
   }

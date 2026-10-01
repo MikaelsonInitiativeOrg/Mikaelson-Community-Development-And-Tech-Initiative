@@ -166,6 +166,10 @@ Publishing a story automatically updates:
 - The homepage "Our latest stories" (`BlogPreview`) and the pop-up (`BlogAnnouncementPopup`): the story marked "show as pop-up", otherwise the latest published one. It appears on every visit; closing it hides it for that visit only.
 - The RSS feed (`/feed.xml`) and dynamic sitemap (`/sitemap.xml`)
 
+Each story shows how many people have **seen** it (opened it) and **read** it (reached the end after spending at least 40% of its reading time on it, 10 to 90 seconds), with **like / dislike** buttons. Each visitor counts once per story, via an anonymous random ID in the `mk_vid` cookie; no names, emails or IP addresses are stored, and bots are ignored (`src/lib/blog-stats.ts`, `/api/blog/[slug]/stats`). The dislike count is shown only to the team in the Studio, which lists all four numbers per story; set `PUBLIC_DISLIKES` in the route to show it publicly.
+
+Analytics: Google Tag Manager (`GTM-M2GCJCC8`, which sends to GA4 `G-0DG0V45VPZ`) and a direct GA4 tag (`G-2XRR90XDZ8`) load from `src/app/layout.tsx`.
+
 Categories map to the ecosystem on the home page: Communities → School Club, Innovation → Labs, Leadership → Partnership & Growth Network.
 
 ## Forms and payments
