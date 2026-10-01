@@ -8,10 +8,10 @@ import { ArrowRight } from "lucide-react";
 import { ClippedTabs } from "@/components/site/clipped-tabs";
 import { Reveal } from "@/components/site/motion/reveal";
 import { categoryId, type Post } from "./posts";
-import Image from "next/image";
 import { LeadCard, StoryCard } from "./post-cards";
 import { PostParamSync } from "./post-param-sync";
 import { DrawnLine } from "./drawn-line";
+import { HeroVideo } from "./hero-video";
 import { Reader, loadArticleBody, type ReaderRefs } from "./reader";
 
 /* ------------------------------------------------------------------ */
@@ -495,17 +495,10 @@ export function BlogLab({ posts }: { posts: Post[] }) {
           </div>
           <figure className="md:col-span-5">
             <div className="relative aspect-[4/5] -rotate-[1.5deg] overflow-hidden rounded-3xl bg-[#e8f7f8] shadow-[0_24px_48px_-24px_rgba(0,62,69,0.35)] motion-reduce:rotate-0 dark:bg-white/5">
-              <Image
-                src="/assets/images/community-2.png"
-                alt="A Mikaelson session: a facilitator speaks while students listen around the tables"
-                fill
-                priority
-                sizes="(min-width: 1200px) 440px, (min-width: 768px) 38vw, 100vw"
-                className="object-cover"
-              />
+              <HeroVideo label="A speaker holding a microphone shares ideas on a panel" />
             </div>
             <figcaption className="mt-4 text-sm text-[#555] md:pl-2 dark:text-white/60">
-              A Mikaelson session, with students and a facilitator.
+              Sharing ideas on a panel.
             </figcaption>
           </figure>
         </div>
