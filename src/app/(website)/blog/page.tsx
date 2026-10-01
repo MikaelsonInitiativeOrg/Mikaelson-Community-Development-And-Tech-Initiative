@@ -35,9 +35,9 @@ export const metadata: Metadata = {
     locale: "en_NG",
     images: [
       {
-        url: "https://mikaelsoninitiative.org/assets/images/og-blog.png",
-        width: 1200,
-        height: 630,
+        url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
+        width: 800,
+        height: 800,
         alt: "Mikaelson Initiative Blog",
       },
     ],
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     description:
       "Articles on leadership, personal development, and student growth from the Mikaelson Initiative.",
     site: "@mcdti_org",
-    images: ["https://mikaelsoninitiative.org/assets/images/og-blog.png"],
+    images: ["https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png"],
   },
   robots: {
     index: true,

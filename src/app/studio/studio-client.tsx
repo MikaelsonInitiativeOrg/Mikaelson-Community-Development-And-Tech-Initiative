@@ -74,11 +74,11 @@ const CATEGORY_PRESETS = [
   "Partnerships & Community",
 ];
 
+// Real session photos on the site (anything else, upload in the editor).
 const SAMPLE_COVERS = [
-  { label: "Community Classroom", url: "/assets/images/community-1.png" },
   { label: "Student Facilitator", url: "/assets/images/community-2.png" },
-  { label: "Students Circle", url: "/assets/images/hero-1.png" },
-  { label: "Initiative Session", url: "/assets/images/community-3.png" },
+  { label: "Community Session", url: "/assets/images/community-4.png" },
+  { label: "Mikaelson logo", url: "/assets/images/mikaelsonlogo.png" },
 ];
 
 export function StudioClient({ initialAuthenticated }: { initialAuthenticated: boolean }) {
@@ -197,11 +197,11 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
       slug: { current: "" },
       category: "Leadership & Discipline",
       excerpt: "",
-      coverImage: "/assets/images/community-1.png",
+      coverImage: "",
       coverImageFit: "contain",
       author: {
-        name: "Michael Segun",
-        role: "Initiative Lead",
+        name: "Mikaelson Initiative",
+        role: "",
         avatar: "",
       },
       publishedAt: new Date().toISOString(),
@@ -547,7 +547,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                 <input
                   type="password"
                   required
-                  placeholder="Enter passkey (e.g. mikaelson2026)"
+                  placeholder="Enter the team passkey"
                   value={passkeyInput}
                   onChange={(e) => setPasskeyInput(e.target.value)}
                   className="w-full rounded-xl border border-black/20 bg-[#F8FAFA] px-4 py-3 text-sm font-medium text-[#111111] placeholder:text-[#777777] transition-colors focus:border-[#003E45] focus:bg-white focus:outline-none dark:border-white/20 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:border-[#5CE1E6]"
@@ -1053,7 +1053,7 @@ export function StudioClient({ initialAuthenticated }: { initialAuthenticated: b
                   <label className="text-xs font-semibold text-[#555] dark:text-white/70">Author Name</label>
                   <input
                     type="text"
-                    placeholder="e.g. Michael Segun or Mikaelson Editorial Team"
+                    placeholder="e.g. your name, or Mikaelson Editorial Team"
                     value={editingPost.author?.name || ""}
                     onChange={(e) =>
                       setEditingPost({

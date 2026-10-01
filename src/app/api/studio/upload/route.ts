@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isStudioRequest } from "@/lib/studio-auth";
 import { saveMedia } from "@/lib/media";
 
-function checkAuth(request: NextRequest): boolean {
-  const token = request.cookies.get("studio_auth_token")?.value;
-  const expected = process.env.STUDIO_ADMIN_PASSKEY || "mikaelson2026";
-  return token === expected;
-}
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
-  if (!checkAuth(request)) {
+  if (!isStudioRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

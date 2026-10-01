@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isStudioRequest } from "@/lib/studio-auth";
 import { createPost, deleteAllPosts, getAllPosts } from "@/lib/blog";
 
-function checkAuth(request: NextRequest): boolean {
-  const token = request.cookies.get("studio_auth_token")?.value;
-  const expected = process.env.STUDIO_ADMIN_PASSKEY || "mikaelson2026";
-  return token === expected;
-}
 
 export async function GET(request: NextRequest) {
-  if (!checkAuth(request)) {
+  if (!isStudioRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -21,7 +17,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!checkAuth(request)) {
+  if (!isStudioRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -45,7 +41,7 @@ export async function POST(request: NextRequest) {
       slug: { current: slug },
       category: data.category?.trim() || "General",
       excerpt: data.excerpt?.trim() || "",
-      coverImage: data.coverImage?.trim() || "/assets/images/community-1.png",
+      coverImage: data.coverImage?.trim() || undefined,
       coverImageFit: data.coverImageFit || "contain",
       author: {
         name: data.author?.name?.trim() || "Mikaelson Initiative",
@@ -68,7 +64,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!checkAuth(request)) {
+  if (!isStudioRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

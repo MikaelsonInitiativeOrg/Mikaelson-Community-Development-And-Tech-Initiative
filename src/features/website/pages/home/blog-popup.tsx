@@ -10,6 +10,8 @@ interface BlogPopupProps {
   post: Post | null;
 }
 
+// Closing the popup hides it for the rest of this visit only (sessionStorage),
+// so the latest story greets people again every time they come back.
 const STORAGE_KEY = "mikaelson_dismissed_blog_popup";
 
 export function BlogAnnouncementPopup({ post }: BlogPopupProps) {
@@ -22,12 +24,12 @@ export function BlogAnnouncementPopup({ post }: BlogPopupProps) {
 
     // Check if user already dismissed this specific post
     try {
-      const dismissed = localStorage.getItem(STORAGE_KEY);
+      const dismissed = sessionStorage.getItem(STORAGE_KEY);
       if (dismissed === post.slug.current) {
         return;
       }
     } catch {
-      // localStorage may fail in private mode
+      // storage may fail in private mode
     }
 
     // Delay popup slightly after page load so user sees hero first
@@ -58,7 +60,7 @@ export function BlogAnnouncementPopup({ post }: BlogPopupProps) {
     setIsOpen(false);
     try {
       if (post?.slug?.current) {
-        localStorage.setItem(STORAGE_KEY, post.slug.current);
+        sessionStorage.setItem(STORAGE_KEY, post.slug.current);
       }
     } catch {
       // Ignore storage error

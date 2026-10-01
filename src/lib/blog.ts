@@ -1,122 +1,28 @@
 import { getDb } from "./db";
+import { fetchSanityStories } from "./sanity-import";
 import { revalidatePath } from "next/cache";
 import type { Post } from "@/features/website/pages/blog/posts";
 
 export type { Post };
 
-// Initial seed posts to ensure the site is never blank when setting up a fresh database
-const SEED_POSTS: Post[] = [
-  {
-    _id: "seed-post-1",
-    title: "How We Build Daily Discipline in African Classrooms",
-    slug: { current: "how-we-build-daily-discipline" },
-    category: "Communities",
-    excerpt:
-      "A deep dive into the morning accountability circles inside the Mikaelson School Club and how student routines spark generational leadership.",
-    coverImage: "/assets/images/community-1.png",
-    author: {
-      name: "Michael Segun",
-      role: "Initiative Lead",
-      avatar: "/assets/images/team/michael.png",
-    },
-    publishedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    _updatedAt: new Date().toISOString(),
-    showAsPopup: true,
-    status: "published",
-    body: `### The Power of 15 Minutes
-
-Every morning before academic periods commence, students in our partner schools gather in circles of eight. There is no lecture, no grading, and no lecturing adult. Instead, there is a student peer facilitator and an accountability sheet.
-
-Each student states three things:
-1. What habit they stayed true to yesterday.
-2. Where their discipline slipped and why.
-3. The singular pledge they are making for today.
-
-> "Discipline is not an innate gift given to a chosen few; it is a muscle exercised in small, transparent daily steps."
-
-### Why Peer Circles Work
-
-When an adult tells a teenager to study or cultivate focus, it is often received as discipline from above. But when a student sees their desk mate admit to staying up scrolling on their phone and making a commitment to turn it off at 9 PM tonight, the dynamic shifts completely.
-
-In our first pilot across three secondary schools:
-- Over 84% of participating students completed their weekly academic targets without parental reminders.
-- Punctuality across participating classes improved by 62%.
-- Teachers reported a noticeable drop in classroom disruptions.
-
-### Looking Ahead
-
-As we expand the Mikaelson School Club ecosystem, our mission remains grounded: creating environments where African students realize that greatness is not an accident—it is daily practice.`,
-  },
-  {
-    _id: "seed-post-2",
-    title: "Building Real-World Tech at Mikaelson Labs",
-    slug: { current: "building-real-world-tech-mikaelson-labs" },
-    category: "Innovation",
-    excerpt:
-      "Why we teach African students to build software that solves local community challenges rather than generic classroom homework.",
-    coverImage: "/assets/images/community-2.png",
-    author: {
-      name: "Mikaelson Labs Team",
-      role: "Innovation Fellows",
-    },
-    publishedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    _updatedAt: new Date().toISOString(),
-    showAsPopup: false,
-    status: "published",
-    body: `### Moving Beyond "Hello World"
-
-Traditional computer science education in many schools focuses heavily on memorizing syntax for exams. Students learn loop definitions on paper, yet struggle to build a usable tool for their local clinic or marketplace.
-
-At Mikaelson Labs, we flipped the curriculum upside down.
-
-### Project-Based Immersion
-
-From day one, students are organized into engineering squads tasked with identifying problems right in their neighborhoods:
-- Digital tracking for local community blood donation drives.
-- SMS-based lesson revision bots for schools with limited internet access.
-- Solar energy monitoring dashboards for community study centers.
-
-> "When young minds build for people they personally know and care about, code transforms from abstract text into active problem-solving."
-
-Students learn Git version control, collaborative code reviews, accessibility standards, and deployment pipelines. The result? Confident builders who see technology as their instrument for community change.`,
-  },
-  {
-    _id: "seed-post-3",
-    title: "The African Studies Initiative: Reclaiming Our Intellectual Heritage",
-    slug: { current: "african-studies-reclaiming-intellectual-heritage" },
-    category: "African Studies",
-    excerpt:
-      "Why understanding African historical systems of governance, philosophy, and collective ethics is essential for tomorrow's leaders.",
-    coverImage: "/assets/images/hero-1.png",
-    author: {
-      name: "Mikaelson Research Group",
-      role: "African Studies Research",
-    },
-    publishedAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-    _updatedAt: new Date().toISOString(),
-    showAsPopup: false,
-    status: "published",
-    body: `### Grounded in Who We Are
-
-True leadership cannot exist in a vacuum. For African youth to lead with conviction on the global stage, they must know where they come from.
-
-Too often, history curricula begin and end with external colonial encounters, skipping centuries of sophisticated African governance, indigenous mathematics, architectural wonders, and communal ethical frameworks like Ubuntu and Omoluabi.
-
-### What We Are Cultivating
-
-Through the Mikaelson Institute for African Studies, we are curating open, accessible multimedia curricula that pair:
-- Classical African philosophical systems of character (Omoluabi, Ma'at, Ubuntu).
-- Critical historical case studies of pre-colonial innovation and trade routes.
-- Practical leadership workshops exploring modern applications of collective responsibility.
-
-We believe that when students understand the intellectual depth of their heritage, their sense of purpose multiplies exponentially.`,
-  },
-];
-
-// In-memory fallback cache when running locally without DATABASE_URL
-let inMemoryPosts: Post[] = [];
+// Without a database (local development with no DATABASE_URL), posts live
+// in this process's memory so the Studio can still be tried out. On the
+// live site that would silently lose posts, so writes refuse instead
+// (requireWritableStore).
+// Kept on globalThis so every part of the dev server (the Studio's API
+// routes and the pages) shares one list.
+const mem = ((globalThis as { __mikaelsonBlogMemory?: { posts: Post[] } }).__mikaelsonBlogMemory ??= { posts: [] });
 
 let tableInitialized = false;
+
+/** In production, never pretend to save: a missing database is an error. */
+function requireWritableStore() {
+  if (!getDb() && process.env.NODE_ENV === "production") {
+    throw new Error(
+      "The blog database isn't connected (DATABASE_URL is missing on the server), so the story wasn't saved.",
+    );
+  }
+}
 
 export async function ensureTable() {
   if (tableInitialized) return;
@@ -127,6 +33,7 @@ export async function ensureTable() {
   }
 
   try {
+    // One statement per call: Neon's HTTP driver runs a single command per query.
     await sql`
       CREATE TABLE IF NOT EXISTS blog_posts (
         id TEXT PRIMARY KEY,
@@ -146,17 +53,57 @@ export async function ensureTable() {
         status TEXT NOT NULL DEFAULT 'published',
         seo_title TEXT,
         seo_description TEXT
-      );
-
-      ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS cover_image_fit TEXT DEFAULT 'contain';
-      
-      -- Permanently remove original seed posts by ID
-      DELETE FROM blog_posts WHERE id IN ('seed-post-1', 'seed-post-2', 'seed-post-3');
-    `;
-
+      )`;
+    await sql`ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS cover_image_fit TEXT DEFAULT 'contain'`;
+    // Permanently remove the old sample posts, if an earlier version saved them.
+    await sql`DELETE FROM blog_posts WHERE id IN ('seed-post-1', 'seed-post-2', 'seed-post-3')`;
+    await sql`CREATE TABLE IF NOT EXISTS blog_meta (key TEXT PRIMARY KEY, value TEXT, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
     tableInitialized = true;
   } catch (err) {
     console.error("Failed to initialize blog_posts table in Neon:", err);
+    return;
+  }
+
+  await importSanityStoriesOnce();
+}
+
+/**
+ * Copies the original Sanity stories into the database, exactly once ever.
+ * Claiming the "sanity_import" row first means only one server instance
+ * imports, and a story deleted later in the Studio never comes back.
+ * Stories whose slug is already taken are skipped, not overwritten.
+ */
+async function importSanityStoriesOnce() {
+  const sql = getDb();
+  if (!sql) return;
+  try {
+    const claimed = (await sql`
+      INSERT INTO blog_meta (key, value) VALUES ('sanity_import', 'running')
+      ON CONFLICT (key) DO NOTHING RETURNING key`) as unknown[];
+    if (!claimed.length) return;
+
+    try {
+      const stories = await fetchSanityStories();
+      for (const s of stories) {
+        await sql`
+          INSERT INTO blog_posts (
+            id, title, slug, category, excerpt, cover_image, cover_image_fit,
+            author_name, author_role, body, published_at, updated_at, show_as_popup, status
+          ) VALUES (
+            ${`sanity_${s.sanityId}`}, ${s.title}, ${s.slug}, ${s.category}, ${s.excerpt},
+            ${s.coverImage ?? null}, 'cover', 'Mikaelson Initiative', 'Contributor', ${s.body},
+            ${s.publishedAt}, NOW(), FALSE, 'published'
+          )
+          ON CONFLICT DO NOTHING`;
+      }
+      await sql`UPDATE blog_meta SET value = ${`done: ${stories.length} stories`}, updated_at = NOW() WHERE key = 'sanity_import'`;
+    } catch (err) {
+      // Release the claim so a later request can try again.
+      await sql`DELETE FROM blog_meta WHERE key = 'sanity_import'`;
+      throw err;
+    }
+  } catch (err) {
+    console.error("Importing the original Sanity stories failed:", err);
   }
 }
 
@@ -187,7 +134,7 @@ function rowToPost(row: any): Post {
 export async function getAllPosts(includeDrafts = false): Promise<Post[]> {
   const sql = getDb();
   if (!sql) {
-    return inMemoryPosts.filter((p) => includeDrafts || p.status === "published");
+    return mem.posts.filter((p) => includeDrafts || p.status === "published");
   }
 
   await ensureTable();
@@ -200,7 +147,7 @@ export async function getAllPosts(includeDrafts = false): Promise<Post[]> {
     return (rows as any[]).map(rowToPost);
   } catch (err) {
     console.error("Error fetching all posts:", err);
-    return inMemoryPosts.filter((p) => includeDrafts || p.status === "published");
+    return mem.posts.filter((p) => includeDrafts || p.status === "published");
   }
 }
 
@@ -211,7 +158,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   const sql = getDb();
   if (!sql) {
     return (
-      inMemoryPosts.find(
+      mem.posts.find(
         (p) =>
           p.slug.current.toLowerCase() === lowerSlug ||
           p.slug.current === cleanSlug ||
@@ -240,7 +187,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   } catch (err) {
     console.error("Error fetching post by slug:", err);
     return (
-      inMemoryPosts.find(
+      mem.posts.find(
         (p) =>
           p.slug.current.toLowerCase() === lowerSlug ||
           p.slug.current === cleanSlug ||
@@ -255,8 +202,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 export async function getPopupPost(): Promise<Post | null> {
   const sql = getDb();
   if (!sql) {
-    const featured = inMemoryPosts.find((p) => p.showAsPopup && p.status === "published");
-    return featured || inMemoryPosts[0] || null;
+    const published = mem.posts.filter((p) => p.status === "published");
+    return published.find((p) => p.showAsPopup) || published[0] || null;
   }
 
   await ensureTable();
@@ -273,7 +220,7 @@ export async function getPopupPost(): Promise<Post | null> {
     return rowToPost(rows[0]);
   } catch (err) {
     console.error("Error fetching popup post:", err);
-    return inMemoryPosts[0] || null;
+    return mem.posts.find((p) => p.status === "published") || null;
   }
 }
 
@@ -287,6 +234,7 @@ export async function getAllPostSlugs(): Promise<{ slug: string; publishedAt?: s
 }
 
 export async function createPost(postData: Omit<Post, "_id">): Promise<Post> {
+  requireWritableStore();
   const id = `post_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const slug = postData.slug.current.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -346,9 +294,9 @@ export async function createPost(postData: Omit<Post, "_id">): Promise<Post> {
     `;
   } else {
     if (newPost.showAsPopup) {
-      inMemoryPosts.forEach((p) => (p.showAsPopup = false));
+      mem.posts.forEach((p) => (p.showAsPopup = false));
     }
-    inMemoryPosts.unshift(newPost);
+    mem.posts.unshift(newPost);
   }
 
   // Invalidate paths for instant updates across the website
@@ -362,6 +310,7 @@ export async function createPost(postData: Omit<Post, "_id">): Promise<Post> {
 }
 
 export async function updatePost(id: string, postData: Partial<Post>): Promise<Post | null> {
+  requireWritableStore();
   const sql = getDb();
   const now = new Date().toISOString();
 
@@ -405,36 +354,37 @@ export async function updatePost(id: string, postData: Partial<Post>): Promise<P
 
     return updated;
   } else {
-    const idx = inMemoryPosts.findIndex((p) => p._id === id || p.slug.current === id);
+    const idx = mem.posts.findIndex((p) => p._id === id || p.slug.current === id);
     if (idx === -1) return null;
 
     if (postData.showAsPopup) {
-      inMemoryPosts.forEach((p) => (p.showAsPopup = false));
+      mem.posts.forEach((p) => (p.showAsPopup = false));
     }
 
-    inMemoryPosts[idx] = {
-      ...inMemoryPosts[idx],
+    mem.posts[idx] = {
+      ...mem.posts[idx],
       ...postData,
       _updatedAt: now,
     };
 
     revalidatePath("/blog");
-    revalidatePath(`/blog/${inMemoryPosts[idx].slug.current}`);
+    revalidatePath(`/blog/${mem.posts[idx].slug.current}`);
     revalidatePath("/");
     revalidatePath("/feed.xml");
     revalidatePath("/sitemap.xml");
 
-    return inMemoryPosts[idx];
+    return mem.posts[idx];
   }
 }
 
 export async function deletePost(id: string): Promise<boolean> {
+  requireWritableStore();
   const sql = getDb();
   if (sql) {
     await ensureTable();
     await sql`DELETE FROM blog_posts WHERE id = ${id} OR slug = ${id};`;
   }
-  inMemoryPosts = inMemoryPosts.filter((p) => p._id !== id && p.slug?.current !== id);
+  mem.posts = mem.posts.filter((p) => p._id !== id && p.slug?.current !== id);
 
   revalidatePath("/blog");
   revalidatePath(`/blog/${id}`);
@@ -446,12 +396,13 @@ export async function deletePost(id: string): Promise<boolean> {
 }
 
 export async function deleteAllPosts(): Promise<boolean> {
+  requireWritableStore();
   const sql = getDb();
   if (sql) {
     await ensureTable();
     await sql`DELETE FROM blog_posts;`;
   }
-  inMemoryPosts = [];
+  mem.posts = [];
 
   revalidatePath("/blog");
   revalidatePath("/");

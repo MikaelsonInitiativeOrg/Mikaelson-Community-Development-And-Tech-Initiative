@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isStudioRequest } from "@/lib/studio-auth";
 import { deletePost, updatePost } from "@/lib/blog";
 
-function checkAuth(request: NextRequest): boolean {
-  const token = request.cookies.get("studio_auth_token")?.value;
-  const expected = process.env.STUDIO_ADMIN_PASSKEY || "mikaelson2026";
-  return token === expected;
-}
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkAuth(request)) {
+  if (!isStudioRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -30,7 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkAuth(request)) {
+  if (!isStudioRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

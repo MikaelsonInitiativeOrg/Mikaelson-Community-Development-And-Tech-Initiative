@@ -156,11 +156,14 @@ Full detail is in [docs/REDESIGN.md](docs/REDESIGN.md). In short:
 
 ## Content: the blog
 
-Stories are managed through our in-house Editorial Studio at `/studio` (protected by a team passkey configured via `STUDIO_ADMIN_PASSKEY`).
-All articles and settings are persisted to Neon Postgres (`DATABASE_URL`).
+Stories are managed through our in-house Editorial Studio at `/studio`, protected by a team passkey in `STUDIO_ADMIN_PASSKEY` (required; there is no default, so without it the Studio stays locked). The session cookie holds a token derived from the passkey, never the passkey itself (`src/lib/studio-auth.ts`).
+
+All articles are stored in Neon Postgres (`src/lib/blog.ts`). The connection string is read from `DATABASE_URL`, `POSTGRES_URL`, or Vercel's prefixed `STORAGE_DATABASE_URL` / `STORAGE_POSTGRES_URL`. On the live site, saving without a database is refused with a clear error; locally, with no database, posts are kept in memory so the Studio can be tried out.
+
+The first time the site connects to the database it creates its tables and imports the three original stories from Sanity once (`src/lib/sanity-import.ts`, tracked in the `blog_meta` table, so deleted stories never come back).
 Publishing a story automatically updates:
 - The main blog hub (`/blog`) and individual article pages (`/blog/[slug]`)
-- The homepage ecosystem preview (`BlogPreview`) and pop-up announcement (`BlogAnnouncementPopup` when flagged as featured)
+- The homepage "Our latest stories" (`BlogPreview`) and the pop-up (`BlogAnnouncementPopup`): the story marked "show as pop-up", otherwise the latest published one. It appears on every visit; closing it hides it for that visit only.
 - The RSS feed (`/feed.xml`) and dynamic sitemap (`/sitemap.xml`)
 
 Categories map to the ecosystem on the home page: Communities → School Club, Innovation → Labs, Leadership → Partnership & Growth Network.

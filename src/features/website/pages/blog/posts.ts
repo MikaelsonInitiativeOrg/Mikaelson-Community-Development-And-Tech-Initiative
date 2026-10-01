@@ -46,9 +46,9 @@ export function categoryId(category: string) {
  * Supports relative paths (/assets/...), external URLs (https://...), and fallback.
  */
 export function imageUrl(source: any, width: number = 1200): string {
-  if (!source) return "/assets/images/og-blog.png";
+  if (!source) return "/assets/images/mikaelsonlogo.png";
   if (typeof source === "string") return source;
   if (source.asset?.url) return source.asset.url;
   if (source.url) return source.url;
-  return "/assets/images/og-blog.png";
+  return "/assets/images/mikaelsonlogo.png";
 }

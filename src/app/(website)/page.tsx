@@ -39,9 +39,9 @@ export const metadata: Metadata = {
     locale: "en_NG",
     images: [
       {
-        url: "https://mikaelsoninitiative.org/assets/images/og-home.png",
-        width: 1200,
-        height: 630,
+        url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
+        width: 800,
+        height: 800,
         alt: "Mikaelson Initiative — Youth Leadership Programs in Nigeria",
       },
     ],
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     description:
       "Structured youth leadership and personal development programs equipping African students with discipline, innovation skills, and accountability systems.",
     site: "@mcdti_org",
-    images: ["https://mikaelsoninitiative.org/assets/images/og-home.png"],
+    images: ["https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png"],
   },
   robots: {
     index: true,
