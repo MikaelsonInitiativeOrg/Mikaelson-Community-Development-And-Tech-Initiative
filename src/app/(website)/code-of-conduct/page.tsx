@@ -22,11 +22,11 @@ export const metadata: Metadata = {
   // The root layout's template adds " | Mikaelson Initiative".
   title: "Code of Conduct",
   description,
-  alternates: { canonical: "https://mikaelsoninitiative.org/code-of-conduct" },
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/code-of-conduct" },
   openGraph: {
     title,
     description,
-    url: "https://mikaelsoninitiative.org/code-of-conduct",
+    url: "https://www.mikaelsoninitiative.org/code-of-conduct",
     images: [{ url: "/assets/images/mikaelsonlogo.png", width: 1200, height: 630, alt: "Mikaelson Initiative" }],
   },
 };

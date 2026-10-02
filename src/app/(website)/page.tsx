@@ -25,21 +25,21 @@ export const metadata: Metadata = {
     "accountability systems students",
     "leadership skills students Nigeria",
   ],
-  authors: [{ name: "Mikaelson Initiative", url: "https://mikaelsoninitiative.org" }],
+  authors: [{ name: "Mikaelson Initiative", url: "https://www.mikaelsoninitiative.org" }],
   alternates: {
-    canonical: "https://mikaelsoninitiative.org",
+    canonical: "https://www.mikaelsoninitiative.org",
   },
   openGraph: {
     title: "Youth Leadership Programs in Nigeria | Mikaelson Initiative",
     description:
       "Structured youth leadership and personal development programs equipping African students with discipline, innovation skills, and accountability systems.",
-    url: "https://mikaelsoninitiative.org",
+    url: "https://www.mikaelsoninitiative.org",
     siteName: "Mikaelson Initiative",
     type: "website",
     locale: "en_NG",
     images: [
       {
-        url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
+        url: "https://www.mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
         width: 800,
         height: 800,
         alt: "Mikaelson Initiative — Youth Leadership Programs in Nigeria",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     description:
       "Structured youth leadership and personal development programs equipping African students with discipline, innovation skills, and accountability systems.",
     site: "@mcdti_org",
-    images: ["https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png"],
+    images: ["https://www.mikaelsoninitiative.org/assets/images/mikaelsonlogo.png"],
   },
   robots: {
     index: true,
@@ -88,8 +88,8 @@ export default async function HomePage() {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "Mikaelson Initiative",
-            url: "https://mikaelsoninitiative.org",
-            logo: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
+            url: "https://www.mikaelsoninitiative.org",
+            logo: "https://www.mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
             description:
               "Structured youth leadership and personal development programs equipping African students with discipline, innovation skills, and accountability systems.",
             foundingLocation: {

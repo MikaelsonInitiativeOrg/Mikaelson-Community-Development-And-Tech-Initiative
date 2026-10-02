@@ -14,11 +14,11 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: "Legal",
   description: DESCRIPTION,
-  alternates: { canonical: "https://mikaelsoninitiative.org/legal" },
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/legal" },
   openGraph: {
     title: "Legal | Mikaelson Initiative",
     description: DESCRIPTION,
-    url: "https://mikaelsoninitiative.org/legal",
+    url: "https://www.mikaelsoninitiative.org/legal",
   },
 };
 

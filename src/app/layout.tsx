@@ -13,7 +13,7 @@ const poppins = Poppins({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
+  "https://www.mikaelsoninitiative.org";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -77,9 +77,6 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-video-preview": -1,
     },
-  },
-  alternates: {
-    canonical: siteUrl,
   },
   category: "Technology & Community Development",
 };

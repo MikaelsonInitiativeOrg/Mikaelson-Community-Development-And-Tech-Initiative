@@ -8,11 +8,12 @@ export const metadata: Metadata = {
   title: "Meet Our Team",
   description:
     "Discover the passionate individuals driving the Mikaelson Initiative forward. Our team works tirelessly to create impact and transform ideas into reality.",
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/team" },
   openGraph: {
     title: "Meet Our Team | Mikaelson Initiative",
     description:
       "Discover the passionate individuals driving the Mikaelson Initiative forward.",
-    url: "https://mikaelsoninitiative.org/team",
+    url: "https://www.mikaelsoninitiative.org/team",
     images: [
       {
         url: "/assets/images/mikaelsonlogo.png",

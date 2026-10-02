@@ -14,11 +14,12 @@ export const metadata: Metadata = {
   title: "Volunteer with Us",
   description:
     "Join the Mikaelson Initiative and contribute your skills to transform Africa. Learn about volunteering opportunities, benefits, and get started today.",
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/volunteer" },
   openGraph: {
     title: "Volunteer with Mikaelson Initiative",
     description:
       "Join the Mikaelson Initiative and contribute your skills to transform Africa. Learn about volunteering opportunities, benefits, and get started today.",
-    url: "https://mikaelsoninitiative.org/volunteer",
+    url: "https://www.mikaelsoninitiative.org/volunteer",
     images: [
       {
         url: "/assets/images/mikaelsonlogo.png",

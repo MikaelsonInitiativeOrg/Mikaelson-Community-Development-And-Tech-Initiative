@@ -7,11 +7,11 @@ import { ScrollLine } from "@/components/site/scroll-line";
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Questions, feedback or partnership ideas? Write to the Mikaelson Initiative. We would love to hear from you.",
-  alternates: { canonical: "https://mikaelsoninitiative.org/contact" },
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/contact" },
   openGraph: {
     title: "Contact Us | Mikaelson Initiative",
     description: "Questions, feedback or partnership ideas? Write to the Mikaelson Initiative. We would love to hear from you.",
-    url: "https://mikaelsoninitiative.org/contact",
+    url: "https://www.mikaelsoninitiative.org/contact",
     images: [{ url: "/assets/images/mikaelsonlogo.png", width: 1200, height: 630, alt: "Mikaelson Initiative" }],
   },
 };

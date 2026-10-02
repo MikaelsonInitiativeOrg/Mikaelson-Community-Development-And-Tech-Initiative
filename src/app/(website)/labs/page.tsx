@@ -8,11 +8,12 @@ export const metadata: Metadata = {
   title: "Mikaelson Innovation Labs | Building Africa's Future",
   description:
     "Explore the Mikaelson Innovation Labs: collaborative spaces where breakthrough ideas meet cutting-edge technology to solve real-world challenges across Africa.",
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/labs" },
   openGraph: {
     title: "Mikaelson Innovation Labs | Building Africa's Future",
     description:
       "Explore the Mikaelson Innovation Labs: collaborative spaces where breakthrough ideas meet cutting-edge technology to solve real-world challenges across Africa.",
-    url: "https://mikaelsoninitiative.org/labs",
+    url: "https://www.mikaelsoninitiative.org/labs",
     images: [
       {
         url: "/assets/images/mikaelsonlogo.png",

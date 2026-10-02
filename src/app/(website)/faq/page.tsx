@@ -12,11 +12,11 @@ const description =
 export const metadata: Metadata = {
   title: "Frequently Asked Questions",
   description,
-  alternates: { canonical: "https://mikaelsoninitiative.org/faq" },
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/faq" },
   openGraph: {
     title: "Frequently Asked Questions | Mikaelson Initiative",
     description,
-    url: "https://mikaelsoninitiative.org/faq",
+    url: "https://www.mikaelsoninitiative.org/faq",
     images: [{ url: "/assets/images/mikaelsonlogo.png", width: 1200, height: 630, alt: "Mikaelson Initiative" }],
   },
 };

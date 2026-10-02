@@ -35,14 +35,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!post) {
     return {
-      title: "Story Not Found | Mikaelson Initiative",
+      title: "Story not found",
       description: "The requested article could not be found.",
     };
   }
 
-  const title = post.seoTitle || `${post.title} | Mikaelson Initiative`;
+  const title = post.seoTitle || post.title;
   const description = post.seoDescription || post.excerpt || "Read our story on leadership, tech, and student growth.";
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
+  const siteUrl = "https://www.mikaelsoninitiative.org";
   const postUrl = `${siteUrl}/blog/${slug}`;
   const ogImage = imageUrl(post.coverImage, 1200);
 
@@ -100,7 +100,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
+  const siteUrl = "https://www.mikaelsoninitiative.org";
   const postUrl = `${siteUrl}/blog/${slug}`;
   const minutes = readingMinutes(post.body);
   const bodyText = post.body || "";

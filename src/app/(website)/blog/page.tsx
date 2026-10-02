@@ -21,21 +21,21 @@ export const metadata: Metadata = {
     "student growth Africa",
     "leadership insights Nigeria",
   ],
-  authors: [{ name: "Mikaelson Initiative", url: "https://mikaelsoninitiative.org" }],
+  authors: [{ name: "Mikaelson Initiative", url: "https://www.mikaelsoninitiative.org" }],
   alternates: {
-    canonical: "https://mikaelsoninitiative.org/blog",
+    canonical: "https://www.mikaelsoninitiative.org/blog",
   },
   openGraph: {
     title: "Blog | Ideas, Leadership & Growth — Mikaelson Initiative",
     description:
       "Articles on leadership, personal development, and student growth from the Mikaelson Initiative.",
-    url: "https://mikaelsoninitiative.org/blog",
+    url: "https://www.mikaelsoninitiative.org/blog",
     siteName: "Mikaelson Initiative",
     type: "website",
     locale: "en_NG",
     images: [
       {
-        url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
+        url: "https://www.mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
         width: 800,
         height: 800,
         alt: "Mikaelson Initiative Blog",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     description:
       "Articles on leadership, personal development, and student growth from the Mikaelson Initiative.",
     site: "@mcdti_org",
-    images: ["https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png"],
+    images: ["https://www.mikaelsoninitiative.org/assets/images/mikaelsonlogo.png"],
   },
   robots: {
     index: true,
@@ -80,13 +80,13 @@ export default async function BlogPage() {
             "@type": "Blog",
             name: "Mikaelson Initiative Blog",
             description: "Articles on leadership, personal development, and student growth across Africa.",
-            url: "https://mikaelsoninitiative.org/blog",
+            url: "https://www.mikaelsoninitiative.org/blog",
             publisher: {
               "@type": "Organization",
               name: "Mikaelson Initiative",
               logo: {
                 "@type": "ImageObject",
-                url: "https://mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
+                url: "https://www.mikaelsoninitiative.org/assets/images/mikaelsonlogo.png",
               },
             },
             blogPost: posts.map((post) => ({
@@ -94,7 +94,7 @@ export default async function BlogPage() {
               headline: post.title,
               description: post.excerpt,
               datePublished: post.publishedAt,
-              url: `https://mikaelsoninitiative.org/blog/${post.slug.current}`,
+              url: `https://www.mikaelsoninitiative.org/blog/${post.slug.current}`,
             })),
           }),
         }}

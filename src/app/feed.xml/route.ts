@@ -14,7 +14,7 @@ function escapeXml(unsafe: string): string {
 }
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mikaelsoninitiative.org";
+  const siteUrl = "https://www.mikaelsoninitiative.org";
 
   let posts: Post[] = [];
   try {

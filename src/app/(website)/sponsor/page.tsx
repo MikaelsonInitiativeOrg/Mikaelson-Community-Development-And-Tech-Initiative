@@ -16,11 +16,11 @@ import styles from "@/features/website/pages/sponsor/supporters.module.css";
 export const metadata: Metadata = {
   title: "Sponsor & Support",
   description: "Sponsor a student, fund a workshop or partner with the Mikaelson Initiative, and help young Africans grow as leaders.",
-  alternates: { canonical: "https://mikaelsoninitiative.org/sponsor" },
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/sponsor" },
   openGraph: {
     title: "Sponsor & Support | Mikaelson Initiative",
     description: "Sponsor a student, fund a workshop or partner with the Mikaelson Initiative, and help young Africans grow as leaders.",
-    url: "https://mikaelsoninitiative.org/sponsor",
+    url: "https://www.mikaelsoninitiative.org/sponsor",
     images: [{ url: "/assets/images/mikaelsonlogo.png", width: 1200, height: 630, alt: "Mikaelson Initiative" }],
   },
 };

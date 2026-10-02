@@ -15,11 +15,12 @@ export const metadata: Metadata = {
   title: "About Us",
   description:
     "Learn about the Mikaelson Initiative, our mission, vision, values, and the passionate team driving positive change across Africa.",
+  alternates: { canonical: "https://www.mikaelsoninitiative.org/about-us" },
   openGraph: {
     title: "About Us | Mikaelson Initiative",
     description:
       "Learn about the Mikaelson Initiative, our mission, vision, values, and the passionate team driving positive change across Africa.",
-    url: "https://mikaelsoninitiative.org/about-us",
+    url: "https://www.mikaelsoninitiative.org/about-us",
     images: [
       {
         url: "/assets/images/mikaelsonlogo.png",
